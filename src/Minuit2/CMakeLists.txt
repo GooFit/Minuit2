@@ -1,0 +1,91 @@
+
+add_library(Minuit2
+    AnalyticalGradientCalculator.cxx
+    BasicMinimumError.cxx
+    CombinedMinimumBuilder.cxx
+    DavidonErrorUpdator.cxx
+    FumiliBuilder.cxx
+    FumiliErrorUpdator.cxx
+    FumiliGradientCalculator.cxx
+    FumiliMinimizer.cxx
+    FumiliStandardChi2FCN.cxx
+    FumiliStandardMaximumLikelihoodFCN.cxx
+    HessianGradientCalculator.cxx
+    InitialGradientCalculator.cxx
+    LaEigenValues.cxx
+    LaInnerProduct.cxx
+    LaInverse.cxx
+    LaOuterProduct.cxx
+    LaSumOfElements.cxx
+    LaVtMVSimilarity.cxx
+    MPIProcess.cxx
+    MinimumBuilder.cxx
+    Minuit2Minimizer.cxx
+    MnApplication.cxx
+    MnContours.cxx
+    MnCovarianceSqueeze.cxx
+    MnEigen.cxx
+    MnFcn.cxx
+    MnFumiliMinimize.cxx
+    MnFunctionCross.cxx
+    MnGlobalCorrelationCoeff.cxx
+    MnHesse.cxx
+    MnLineSearch.cxx
+    MnMachinePrecision.cxx
+    MnMinos.cxx
+    MnParabolaFactory.cxx
+    MnParameterScan.cxx
+    MnPlot.cxx
+    MnPosDef.cxx
+    MnPrint.cxx
+    MnScan.cxx
+    MnSeedGenerator.cxx
+    MnStrategy.cxx
+    MnTiny.cxx
+    MnTraceObject.cxx
+    MnUserFcn.cxx
+    MnUserParameterState.cxx
+    MnUserParameters.cxx
+    MnUserTransformation.cxx
+    ModularFunctionMinimizer.cxx
+    NegativeG2LineSearch.cxx
+    Numerical2PGradientCalculator.cxx
+    ParametricFunction.cxx
+    ScanBuilder.cxx
+    SimplexBuilder.cxx
+    SimplexParameters.cxx
+    SimplexSeedGenerator.cxx
+    SinParameterTransformation.cxx
+    SqrtLowParameterTransformation.cxx
+    SqrtUpParameterTransformation.cxx
+    VariableMetricBuilder.cxx
+    VariableMetricEDMEstimator.cxx
+    mnbins.cxx
+    mndasum.cxx
+    mndaxpy.cxx
+    mnddot.cxx
+    mndscal.cxx
+    mndspmv.cxx
+    mndspr.cxx
+    mnlsame.cxx
+    mnteigen.cxx
+    mntplot.cxx
+    mnvert.cxx
+    mnxerbla.cxx
+    )
+
+target_include_directories(
+    Minuit2
+    PUBLIC
+    ${PROJECT_SOURCE_DIR}/inc
+    )
+
+target_compile_definitions(
+    Minuit2
+    PRIVATE
+    WARNINGMSG
+)
+
+target_link_libraries(Minuit2 PUBLIC Math)
+#target_link_libraries(Minuit2 PRIVATE "-Wl,--no-undefined")
+target_link_libraries(Minuit2 PRIVATE "-Wl,-undefined,error")
