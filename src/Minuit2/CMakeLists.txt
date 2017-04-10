@@ -87,5 +87,3 @@ target_compile_definitions(
 )
 
 target_link_libraries(Minuit2 PUBLIC Math)
-#target_link_libraries(Minuit2 PRIVATE "-Wl,--no-undefined")
-target_link_libraries(Minuit2 PRIVATE "-Wl,-undefined,error")
