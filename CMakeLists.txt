@@ -1,11 +1,13 @@
 cmake_minimum_required(VERSION 3.4)
 project(Minuit2 CXX)
 
-set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Inherit default from parent project if not main project
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+endif()
 
 find_package(OpenMP)
 if(OpenMP_FOUND)
@@ -15,5 +17,9 @@ if(OpenMP_FOUND)
 endif()
 
 add_subdirectory(src)
-add_subdirectory(test)
+
+# Only add tests if this is the main project
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
+    add_subdirectory(test)
+endif()
 
