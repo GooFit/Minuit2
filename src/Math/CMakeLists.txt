@@ -6,7 +6,7 @@ add_library(Math
 
 target_include_directories(
     Math
-    PUBLIC
+    PRIVATE
     ${PROJECT_SOURCE_DIR}/inc
     )
 
@@ -15,3 +15,10 @@ target_compile_definitions(
     PRIVATE
     MATH_NO_PLUGIN_MANAGER
     )
+
+
+install(TARGETS Math
+        EXPORT MINUIT2
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include)
