@@ -77,7 +77,7 @@ add_library(Minuit2
 target_include_directories(
     Minuit2
     PUBLIC
-    ${PROJECT_SOURCE_DIR}/inc
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc> $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
     )
 
 target_compile_definitions(
@@ -86,4 +86,14 @@ target_compile_definitions(
     WARNINGMSG
 )
 
+if (MPI_CXX_FOUND)
+   target_link_libraries(Minuit2 PUBLIC ${MPI_CXX_LIBRARIES})
+endif()
 target_link_libraries(Minuit2 PUBLIC Math)
+
+install(TARGETS Minuit2 
+        EXPORT MINUIT2Config
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include)
+
