@@ -16,6 +16,8 @@ target_compile_definitions(
     MATH_NO_PLUGIN_MANAGER
     )
 
+#Require c++11
+target_compile_features(Math PUBLIC cxx_constexpr)
 
 install(TARGETS Math
         EXPORT MINUIT2Config
