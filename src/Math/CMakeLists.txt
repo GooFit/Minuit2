@@ -18,7 +18,7 @@ target_compile_definitions(
 
 
 install(TARGETS Math
-        EXPORT MINUIT2
+        EXPORT MINUIT2Config
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         PUBLIC_HEADER DESTINATION include)

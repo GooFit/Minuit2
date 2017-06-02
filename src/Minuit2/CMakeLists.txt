@@ -92,7 +92,7 @@ endif()
 target_link_libraries(Minuit2 PUBLIC Math)
 
 install(TARGETS Minuit2 
-        EXPORT MINUIT2
+        EXPORT MINUIT2Config
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         PUBLIC_HEADER DESTINATION include)

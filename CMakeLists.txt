@@ -33,7 +33,7 @@ add_subdirectory(src)
 #Install the header files
 install(DIRECTORY inc/ DESTINATION include)
    
-install(EXPORT MINUIT2 DESTINATION cmake)
+install(EXPORT MINUIT2Config DESTINATION cmake)
 
 # Only add tests if this is the main project
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
