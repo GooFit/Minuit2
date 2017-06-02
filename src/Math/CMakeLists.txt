@@ -6,8 +6,8 @@ add_library(Math
 
 target_include_directories(
     Math
-    PRIVATE
-    ${PROJECT_SOURCE_DIR}/inc
+    PUBLIC
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc> $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
     )
 
 target_compile_definitions(
