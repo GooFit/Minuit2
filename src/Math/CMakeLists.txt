@@ -18,3 +18,12 @@ target_compile_definitions(
     )
 
 install(TARGETS Math DESTINATION lib EXPORT Minuit2-targets)
+
+#Require c++11
+target_compile_features(Math PUBLIC cxx_constexpr)
+
+install(TARGETS Math
+        EXPORT MINUIT2Config
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include)
