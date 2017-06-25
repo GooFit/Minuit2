@@ -9,6 +9,10 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
 endif()
 
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 # Buggy, do not activate
 # find_package(OpenMP)
 # if(OpenMP_FOUND)
@@ -24,4 +28,11 @@ add_subdirectory(src)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     add_subdirectory(test)
 endif()
+
+install(EXPORT Minuit2-targets DESTINATION Minuit2)
+
+## Allow build directory to work for CMake import
+
+export(TARGETS Math Minuit2 FILE Minuit2-exports.cmake)
+export(PACKAGE Minuit2)
 
