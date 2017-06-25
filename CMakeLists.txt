@@ -24,12 +24,16 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_subdirectory(src)
 
+install(DIRECTORY inc/Fit DESTINATION include/Minuit2/Fit)
+install(DIRECTORY inc/Math DESTINATION include/Minuit2/Math)
+install(DIRECTORY inc/Minuit2 DESTINATION include/Minuit2/Minuit2)
+
 # Only add tests if this is the main project
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     add_subdirectory(test)
 endif()
 
-install(EXPORT Minuit2-targets DESTINATION Minuit2)
+install(EXPORT Minuit2-targets DESTINATION lib/Minuit2)
 
 ## Allow build directory to work for CMake import
 

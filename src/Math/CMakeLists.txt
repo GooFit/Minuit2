@@ -8,7 +8,7 @@ target_include_directories(
     Math
     PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc>  
-    $<INSTALL_INTERFACE:inc>
+    $<INSTALL_INTERFACE:include/Minuit2>
     )
 
 target_compile_definitions(

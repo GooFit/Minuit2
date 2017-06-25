@@ -78,7 +78,7 @@ target_include_directories(
     Minuit2
     PUBLIC
     $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc>  
-    $<INSTALL_INTERFACE:inc>
+    $<INSTALL_INTERFACE:include/Minuit2>
     )
 
 target_compile_definitions(
