@@ -33,10 +33,9 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     add_subdirectory(test)
 endif()
 
-install(EXPORT Minuit2-targets DESTINATION lib/Minuit2)
+install(EXPORT Minuit2Config DESTINATION lib/cmake/Minuit2)
 
 ## Allow build directory to work for CMake import
-
-export(TARGETS Math Minuit2 FILE Minuit2-exports.cmake)
+export(TARGETS Math Minuit2 FILE Minuit2Targets.cmake)
 export(PACKAGE Minuit2)
 
