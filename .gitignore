@@ -21,3 +21,6 @@ test/MnTutorial/Quad12F
 test/MnTutorial/Quad1F
 test/MnTutorial/Quad4F
 test/MnTutorial/Quad8F
+
+*.egg-info
+/*venv*

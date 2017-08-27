@@ -6,7 +6,9 @@ from plumbum.cmd import git
 import sys
 import re
 
-root_ver_re = re.compile(r'ROOT 6.\d\d.\d\d')
+ver_re = re.compile(r'6.\d\d.\d\d')
+root_ver_re = re.compile(r'v6-\d\d-\d\d')
+
 clone = git['clone']
 
 from difflib import unified_diff
