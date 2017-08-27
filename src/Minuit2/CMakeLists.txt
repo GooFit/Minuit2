@@ -77,7 +77,7 @@ add_library(Minuit2
 target_include_directories(
     Minuit2
     PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc>  
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc>
     $<INSTALL_INTERFACE:include/Minuit2>
     )
 
@@ -89,4 +89,9 @@ target_compile_definitions(
 
 target_link_libraries(Minuit2 PUBLIC Math)
 
-install(TARGETS Minuit2 DESTINATION lib EXPORT Minuit2-targets)
+install(TARGETS Minuit2
+        EXPORT Minuit2Config
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include)
+

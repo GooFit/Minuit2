@@ -7,7 +7,7 @@ add_library(Math
 target_include_directories(
     Math
     PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc>  
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc>
     $<INSTALL_INTERFACE:include/Minuit2>
     )
 
@@ -23,7 +23,7 @@ install(TARGETS Math DESTINATION lib EXPORT Minuit2-targets)
 target_compile_features(Math PUBLIC cxx_constexpr)
 
 install(TARGETS Math
-        EXPORT MINUIT2Config
+        EXPORT Minuit2Config
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         PUBLIC_HEADER DESTINATION include)
