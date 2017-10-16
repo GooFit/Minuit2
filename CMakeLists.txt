@@ -44,9 +44,9 @@ endif()
 
 add_subdirectory(src)
 
-install(DIRECTORY inc/Fit DESTINATION include/Minuit2/Fit)
-install(DIRECTORY inc/Math DESTINATION include/Minuit2/Math)
-install(DIRECTORY inc/Minuit2 DESTINATION include/Minuit2/Minuit2)
+install(DIRECTORY inc/Fit DESTINATION include/Minuit2)
+install(DIRECTORY inc/Math DESTINATION include/Minuit2)
+install(DIRECTORY inc/Minuit2 DESTINATION include/Minuit2)
 
 # Only add tests if this is the main project
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
