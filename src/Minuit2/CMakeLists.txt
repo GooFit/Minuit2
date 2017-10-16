@@ -87,6 +87,9 @@ target_compile_definitions(
     WARNINGMSG
 )
 
+target_compile_features(Minuit2 PUBLIC cxx_nullptr cxx_nonstatic_member_init)
+set_target_properties(Minuit2 PROPERTIES CXX_EXTENSIONS OFF)
+
 target_link_libraries(Minuit2 PUBLIC Math)
 
 install(TARGETS Minuit2
