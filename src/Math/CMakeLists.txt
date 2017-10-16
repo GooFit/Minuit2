@@ -7,7 +7,8 @@ add_library(Math
 target_include_directories(
     Math
     PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc> $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc>
+    $<INSTALL_INTERFACE:include/Minuit2>
     )
 
 target_compile_definitions(
@@ -16,11 +17,14 @@ target_compile_definitions(
     MATH_NO_PLUGIN_MANAGER
     )
 
-#Require c++11
-#target_compile_features(Math PUBLIC cxx_constexpr)
+install(TARGETS Math DESTINATION lib EXPORT Minuit2-targets)
+
+target_compile_features(Math PUBLIC cxx_auto_type cxx_static_assert)
+set_target_properties(Math PROPERTIES CXX_EXTENSIONS OFF)
+
 
 install(TARGETS Math
-        EXPORT MINUIT2Config
+        EXPORT Minuit2Config
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
         PUBLIC_HEADER DESTINATION include)
