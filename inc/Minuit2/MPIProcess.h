@@ -83,7 +83,7 @@ namespace Minuit2 {
          MPI_Initialized(&initialized);
          if (!(initialized)) {
             int argc = 0;
-            char** argv = 0;
+            char** argv = NULL;
             MPI_Init(&argc, &argv);
             int rank = 0;
             MPI_Comm_rank(MPI_COMM_WORLD, &rank);

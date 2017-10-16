@@ -17,7 +17,7 @@ target_compile_definitions(
     )
 
 #Require c++11
-target_compile_features(Math PUBLIC cxx_constexpr)
+#target_compile_features(Math PUBLIC cxx_constexpr)
 
 install(TARGETS Math
         EXPORT MINUIT2Config

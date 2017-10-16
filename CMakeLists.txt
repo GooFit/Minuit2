@@ -18,14 +18,18 @@ endif()
 #     link_libraries(${OpenMP_CXX_FLAGS})
 # endif()
 
-find_package(MPI)
-if (MPI_CXX_FOUND)
-   # Set compilation flags
-   if(${MPI_CXX_COMPILE_FLAGS})
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MPI_CXX_COMPILE_FLAGS}")
+set(ENABLE_MPI FALSE CACHE BOOL "Enable MPI")
+
+if (ENABLE_MPI)
+   find_package(MPI)
+   if (MPI_CXX_FOUND)
+      # Set compilation flags
+      if(${MPI_CXX_COMPILE_FLAGS})
+         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MPI_CXX_COMPILE_FLAGS}")
+      endif()
+      include_directories(${MPI_CXX_INCLUDE_PATH})
+      add_definitions("-DMPIPROC")
    endif()
-   include_directories(${MPI_CXX_INCLUDE_PATH})
-   add_definitions("-DMPIPROC")
 endif()
 
 add_subdirectory(src)
