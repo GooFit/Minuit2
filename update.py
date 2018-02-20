@@ -3,15 +3,12 @@ from __future__ import print_function, division
 
 from plumbum import local, cli, colors, FG
 from plumbum.cmd import git
-import sys
 import re
 
 ver_re = re.compile(r'6.\d\d.\d\d')
 root_ver_re = re.compile(r'v6-\d\d-\d\d')
 
 clone = git['clone']
-
-from difflib import unified_diff
 
 master_dir = local.path(__file__).dirname
 
@@ -45,7 +42,7 @@ class Update(cli.Application):
 
         readme = master_dir / 'README.md'
         text = readme.read()
-        text = root_ver_re.sub('ROOT ' + root_version, text)
+        text = root_ver_re.sub(root_version, text)
         readme.write(text)
 
 if __name__ == '__main__':
