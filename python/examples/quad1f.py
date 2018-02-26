@@ -14,5 +14,9 @@ fcn = Quad1F();
 upar = minuit2.MnUserParameters()
 upar.Add("x", 1., 0.1)
 migrad = minuit2.MnMigrad(fcn, upar)
+
+minuit2.MnPrint.SetLevel(3)
+
 min = migrad()
-print(min)
+
+print("min =", min)
