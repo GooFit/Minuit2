@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.4)
-project(Minuit2 CXX)
+project(Minuit2
+    VERSION 6.10.08
+    LANGUAGES CXX)
 
 # Inherit default from parent project if not main project
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
@@ -22,8 +24,8 @@ add_library(MinuitCommon INTERFACE)
 # endif()
 
 # Uses the old CXX bindings (deprecated), probably do not activate
-option(ENABLE_MPI "Enable MPI")
-if(ENABLE_MPI)
+option(MINUIT2_MPI "Enable MPI for Minuit2")
+if(MINUIT2_MPI)
     find_package(MPI REQUIRED)
 
     # For supporting CMake < 3.9:
@@ -53,9 +55,20 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     add_subdirectory(test)
 endif()
 
-install(EXPORT Minuit2Config DESTINATION lib/cmake/Minuit2)
+install(EXPORT Minuit2Config DESTINATION share/cmake/Modules/Minuit2)
 
 ## Allow build directory to work for CMake import
 export(TARGETS MinuitCommon Math Minuit2 FILE Minuit2Targets.cmake)
 export(PACKAGE Minuit2)
+
+
+## Packaging support
+set(CPACK_PACKAGE_VENDOR "root.cern.ch")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Minuit2 standalone fitting tool")
+set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+include(CPack)
 
