@@ -6,7 +6,6 @@ from plumbum.cmd import git
 import re
 
 ver_re = re.compile(r'6.\d\d.\d\d')
-root_ver_re = re.compile(r'v6-\d\d-\d\d')
 
 clone = git['clone']
 
@@ -25,8 +24,14 @@ def process(a, b, root):
         else:
             colors.info.print("No changes:", f.name)
 
-class Update(cli.Application):
+def update_version(root_version, filename):
+    "Update the version number everywhere in file"
+    textfile = master_dir / filename
+    text = textfile.read()
+    text = ver_re.sub(root_version.replace('-','.').replace('v',''), text)
+    textfile.write(text)
 
+class Update(cli.Application):
     def main(self, root_version):
         with local.tempdir() as tmp:
             # Download ROOT with the requested tag
@@ -44,17 +49,10 @@ class Update(cli.Application):
             process('inc/Math/*.h', 'math/mathcore/inc/Math', root)
             process('inc/Minuit2/*.h', 'math/minuit2/inc/Minuit2', root)
 
-        # Set the version number inside the readme
-        readme = master_dir / 'README.md'
-        text = readme.read()
-        text = root_ver_re.sub(root_version, text)
-        readme.write(text)
-
-        # Set the version number inside CMake
-        cmake = master_dir / 'CMakeLists.txt'
-        text = cmake.read()
-        text = ver_re.sub(root_version.replace('-','.').replace('v',''), text)
-        cmake.write(text)
+        # Set the version number in files
+        update_version(root_version, 'README.md')
+        update_version(root_version, 'CMakeLists.txt')
+        update_version(root_version, 'setup.py')
 
 
 if __name__ == '__main__':

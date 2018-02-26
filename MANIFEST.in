@@ -1,0 +1,4 @@
+include README.md LICENSE
+recursive-include src *.cxx
+recursive-include inc *.h
+recursive-include python *.cpp

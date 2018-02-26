@@ -22,5 +22,8 @@ test/MnTutorial/Quad1F
 test/MnTutorial/Quad4F
 test/MnTutorial/Quad8F
 
-*.egg-info
+/*.egg-info
 /*venv*
+/dist/*
+/Pipfile*
+/var/*
