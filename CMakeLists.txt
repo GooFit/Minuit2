@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 3.1)
 project(Minuit2
     VERSION 6.10.08
     LANGUAGES CXX)
@@ -6,25 +6,37 @@ project(Minuit2
 # Inherit default from parent project if not main project
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 endif()
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
+# Common features to all packages (Math and Minuit2)
 add_library(MinuitCommon INTERFACE)
 
-# Buggy, do not activate
-# find_package(OpenMP)
-# if(OpenMP_FOUND)
-#     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-#     find_package(Threads REQUIRED)
-#     link_libraries(Threads::Threads)
-#     link_libraries(${OpenMP_CXX_FLAGS})
-# endif()
+# OpenMP support
+option(MINUIT2_OMP "Enable OpenMP for Minuit2 (requires thread safe FCN function)")
+if(MINUIT2_OMP)
+    find_package(OpenMP REQUIRED)
 
+    # For CMake < 3.9, we need to make the target ourselves
+    if(NOT TARGET OpenMP::OpenMP_CXX)
+        add_library(OpenMP_TARGET INTERFACE)
+        add_library(OpenMP::OpenMP_CXX ALIAS OpenMP_TARGET)
+        target_compile_options(OpenMP_TARGET INTERFACE ${OpenMP_CXX_FLAGS})
+        find_package(Threads REQUIRED)
+        target_link_libraries(OpenMP_TARGET INTERFACE Threads::Threads)
+        target_link_libraries(OpenMP_TARGET INTERFACE ${OpenMP_CXX_FLAGS})
+    endif()
+    target_link_libraries(MinuitCommon INTERFACE OpenMP::OpenMP_CXX)
+    message(STATUS "Building Minuit2 with OpenMP support")
+endif()
+
+# MPI support
 # Uses the old CXX bindings (deprecated), probably do not activate
 option(MINUIT2_MPI "Enable MPI for Minuit2")
+
 if(MINUIT2_MPI)
     find_package(MPI REQUIRED)
 
