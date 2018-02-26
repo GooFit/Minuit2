@@ -34,7 +34,16 @@ You do not need to add include directories or anything else for Minuit2; the CMa
 
 ## Packaging
 
-Minuit2 also has basic support for CPack to make installers for different platforms. If you are familiar with CPack, please try it on your platform and make suggestions or pull requests to improve the support for the installer you are trying to build.
+Minuit2 also has basic support for CPack to make installers for different platforms. To build a source package:
+
+```bash
+make source_package
+```
+
+To build a binary package (add other generators with `-G`):
+```bash
+make package
+```
 
 
 [ROOT]: https://root.cern.ch
