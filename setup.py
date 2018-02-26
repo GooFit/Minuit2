@@ -20,6 +20,7 @@ class get_pybind_include(object):
         return pybind11.get_include(self.user)
 
 minuit2_pybind_sources = [
+    'Minuit2/FCNBase.cpp',
     'Minuit2/MinuitParameter.cpp',
     'Minuit2/MnUserParameters.cpp',
     'Minuit2/MnUserParameterState.cpp',
