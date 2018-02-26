@@ -20,6 +20,10 @@ class get_pybind_include(object):
         return pybind11.get_include(self.user)
 
 minuit2_pybind_sources = [
+    'Minuit2/MinuitParameter.cpp',
+    'Minuit2/MnUserParameters.cpp',
+    'Minuit2/MnUserParameterState.cpp',
+    'Minuit2/MnUserCovariance.cpp',
     'Minuit2/FunctionMinimum.cpp',
     'main.cpp',
 ]
@@ -106,9 +110,9 @@ minuit2_sources = [
 
 
 # Add the correct directories
-math_sources = ['../src/Math/' + m for m in math_sources]
-minuit2_sources = ['../src/Minuit2/' + m for m in minuit2_sources]
-minuit2_pybind_sources = ['src/' + m for m in minuit2_pybind_sources]
+math_sources = ['src/Math/' + m for m in math_sources]
+minuit2_sources = ['src/Minuit2/' + m for m in minuit2_sources]
+minuit2_pybind_sources = ['python/' + m for m in minuit2_pybind_sources]
 
 ext_modules = [
     Extension(
@@ -118,7 +122,7 @@ ext_modules = [
             # Path to pybind11 headers
             get_pybind_include(),
             get_pybind_include(user=True),
-            '../inc',
+            'inc',
         ],
         language='c++',
         define_macros=[('WARNINGMSG', None),
@@ -189,7 +193,7 @@ setup(
     description='A Pybind11 Minuit2 binding',
     long_description='',
     ext_modules=ext_modules,
-    install_requires=['pybind11>=2.2'],
+    install_requires=['pybind11>=2.2', 'numpy>=1.10'],
     cmdclass={'build_ext': BuildExt},
     zip_safe=False,
 )
