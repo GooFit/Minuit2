@@ -1,8 +1,10 @@
 #include <pybind11/pybind11.h>
-
 #include <pybind11/stl.h>
 
+#include <sstream>
+
 #include <Minuit2/FunctionMinimum.h>
+#include <Minuit2/MnPrint.h>
 
 namespace py = pybind11;
 using namespace pybind11::literals;
@@ -30,5 +32,11 @@ void init_FunctionMinimum(py::module &m) {
         .def("HasCovariance", &FunctionMinimum::HasCovariance)
         .def("IsAboveMaxEdm", &FunctionMinimum::IsAboveMaxEdm)
         .def("HasReachedCallLimit", &FunctionMinimum::HasReachedCallLimit)
+
+        .def("__str__", [](const FunctionMinimum &self){
+            std::stringstream os;
+            os << self;
+            return os.str();
+        })
         ;
 }

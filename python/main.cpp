@@ -8,6 +8,8 @@ void init_MnUserParameterState(py::module &);
 void init_MnUserParameters(py::module &);
 void init_MnUserCovariance(py::module &);
 void init_FunctionMinimum(py::module &);
+void init_MnApplication(py::module &);
+void init_MnMigrad(py::module &);
 
 PYBIND11_MODULE(minuit2, m) {
     m.doc() = "Python interface for Minuit2";
@@ -18,4 +20,6 @@ PYBIND11_MODULE(minuit2, m) {
     init_MnUserParameters(m);
     init_MnUserCovariance(m);
     init_FunctionMinimum(m);
+    init_MnApplication(m);
+    init_MnMigrad(m);
 }

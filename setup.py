@@ -26,6 +26,8 @@ minuit2_pybind_sources = [
     'Minuit2/MnUserParameterState.cpp',
     'Minuit2/MnUserCovariance.cpp',
     'Minuit2/FunctionMinimum.cpp',
+    'Minuit2/MnApplication.cpp',
+    'Minuit2/MnMigrad.cpp',
     'main.cpp',
 ]
 
