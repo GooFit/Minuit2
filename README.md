@@ -1,4 +1,4 @@
-This is a new conversion of Minuit2 from the [ROOT] source to standalone, based on ROOT v6-10-08 and [CMake] 3.4+. For information about the Minuit2 fitter, please see the [documentation in ROOT][minuitdoc]. 
+This is a new conversion of Minuit2 from the [ROOT] source to standalone, based on ROOT v6-12-06 and [CMake] 3.4+. For information about the Minuit2 fitter, please see the [documentation in ROOT][minuitdoc]. 
 
 ## Building
 
