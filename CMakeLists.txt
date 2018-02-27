@@ -74,7 +74,7 @@ export(TARGETS MinuitCommon Math Minuit2 FILE Minuit2Targets.cmake)
 export(PACKAGE Minuit2)
 
 
-## Packaging support
+# Packaging support
 set(CPACK_PACKAGE_VENDOR "root.cern.ch")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Minuit2 standalone fitting tool")
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
@@ -82,10 +82,15 @@ set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-set(CPACK_SOURCE_IGNORE_FILES 
+# CPack collects *everything* except what's listed here.
+set(CPACK_SOURCE_IGNORE_FILES
     /.git
-    /.*build.*/
-    .DS_Store
+    /dist
+    /.*build.*
+    /\\\\.DS_Store
+    /.*\\\\.egg-info
+    /var
+    /Pipfile.*$
 )
 include(CPack)
 
