@@ -1,33 +1,19 @@
 
-add_executable( Quad1F
-    Quad1F.h
-    Quad1FMain.cxx
-)
+add_minuit2_test(Quad1F Quad1FMain.cxx Quad1F.h)
 
-target_include_directories(Quad1F PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(Quad1F PUBLIC Minuit2)
+add_minuit2_test(Quad4F Quad4FMain.cxx Quad4F.h)
 
-add_executable( Quad4F
-    Quad4F.h
-    Quad4FMain.cxx
-)
+add_minuit2_test(Quad8F Quad8FMain.cxx Quad8F.h)
 
-target_include_directories(Quad4F PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(Quad4F PUBLIC Minuit2)
+add_minuit2_test(Quad12F Quad12FMain.cxx Quad12F.h)
 
-add_executable( Quad8F
-    Quad8F.h
-    Quad8FMain.cxx
-)
-
-target_include_directories(Quad8F PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(Quad8F PUBLIC Minuit2)
-
-add_executable( Quad12F
-    Quad12F.h
-    Quad12FMain.cxx
-)
-
-target_include_directories(Quad12F PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(Quad12F PUBLIC Minuit2)
+add_test(
+    NAME ExampleCMakeBuild
+    COMMAND "${CMAKE_CTEST_COMMAND}"
+            --build-and-test
+            "${Minuit2_SOURCE_DIR}/examples/simple/"
+            "${CMAKE_CURRENT_BINARY_DIR}/simple/"
+            --build-generator "${CMAKE_GENERATOR}"
+            --test-command "${CMAKE_CTEST_COMMAND}"
+    )
 

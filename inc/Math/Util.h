@@ -19,6 +19,15 @@
 #include <cmath>
 #include <limits>
 
+
+// This can be protected against by defining ROOT_Math_VecTypes
+// This is only used for the R__HAS_VECCORE define
+// and a single VecCore function in EvalLog
+#ifndef ROOT_Math_VecTypes
+#include "Types.h"
+#endif
+
+
 // for defining unused variables in the interfaces
 //  and have still them in the documentation
 #define MATH_UNUSED(var)   (void)var
@@ -49,18 +58,16 @@ namespace ROOT {
    /// safe evaluation of log(x) with a protections against negative or zero argument to the log
    /// smooth linear extrapolation below function values smaller than  epsilon
    /// (better than a simple cut-off)
-   inline double EvalLog(double x)
-   {
-   // evaluate the log
-#ifdef __CINT__
-      static const double epsilon = 2. * 2.2250738585072014e-308;
+
+   template<class T>
+   inline T EvalLog(T x) {
+      static const T epsilon = T(2.0 * std::numeric_limits<double>::min());
+#ifdef R__HAS_VECCORE
+      T logval = vecCore::Blend<T>(x <= epsilon, x / epsilon + std::log(epsilon) - T(1.0), std::log(x));
 #else
-      static const double epsilon = 2. * std::numeric_limits<double>::min();
+      T logval = x <= epsilon ? x / epsilon + std::log(epsilon) - T(1.0) : std::log(x);
 #endif
-      if (x <= epsilon)
-         return x / epsilon + std::log(epsilon) - 1;
-      else
-         return std::log(x);
+      return logval;
    }
 
    } // end namespace Util

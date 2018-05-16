@@ -1,15 +1,64 @@
 
-add_library(Math
+set(FIT_HEADERS
+    ParameterSettings.h
+    )
+
+set(MATH_HEADERS
+    Error.h
+    FitMethodFunction.h
+    Functor.h
+    GenAlgoOptions.h
+    IFunction.h
+    IFunctionfwd.h
+    IOptions.h
+    Minimizer.h
+    MinimizerOptions.h
+    Util.h
+    WrappedFunction.h
+    WrappedParamFunction.h
+    )
+
+set(MATH_SOURCES
     GenAlgoOptions.cxx
     MinimizerOptions.cxx
     )
 
+copy_standalone(SOURCE ../../../mathcore/inc/Fit DESTINATION ../../inc/Fit
+    OUTPUT FIT_HEADERS
+    FILES ${FIT_HEADERS})
+copy_standalone(SOURCE ../../../mathcore/inc/Math DESTINATION ../../inc/Math
+    OUTPUT  MATH_HEADERS
+    FILES ${MATH_HEADERS})
+copy_standalone(SOURCE ../../../mathcore/src DESTINATION .
+    OUTPUT MATH_SOURCES
+    FILES ${MATH_SOURCES})
+
+# Adding the headers helps IDEs show the correct headers on targets
+add_library(Math
+    ${MATH_SOURCES}
+    ${MATH_HEADERS}
+    ${FIT_HEADERS}
+    )
+
+# Add alias for direct inclusion
+add_library(Minuit2::Math ALIAS Math)
+
+# Build and install directories are different, using CMake Generator expression
 target_include_directories(
     Math
     PUBLIC
-    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/inc>
+    $<BUILD_INTERFACE:${Minuit2_SOURCE_DIR}/inc>
     $<INSTALL_INTERFACE:include/Minuit2>
     )
+
+# We need to add the ROOT mathcore directories if build inside of ROOT without standalone)
+if(minuit2_inroot AND NOT minuit2_standalone)
+    target_include_directories(
+        Math
+        PUBLIC
+        $<BUILD_INTERFACE:${Minuit2_SOURCE_DIR}/../mathcore/inc>
+        )
+endif()
 
 target_compile_definitions(
     Math
@@ -17,14 +66,22 @@ target_compile_definitions(
     MATH_NO_PLUGIN_MANAGER
     )
 
-install(TARGETS Math DESTINATION lib EXPORT Minuit2-targets)
+target_compile_definitions(
+    Math
+    PUBLIC
+    ROOT_Math_VecTypes
+    )
+
+target_link_libraries(Math PUBLIC Common)
 
 target_compile_features(Math PUBLIC cxx_auto_type cxx_static_assert)
 set_target_properties(Math PROPERTIES CXX_EXTENSIONS OFF)
 
-
 install(TARGETS Math
-        EXPORT Minuit2Config
+        EXPORT Minuit2Targets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
-        PUBLIC_HEADER DESTINATION include)
+        )
+
+install(FILES ${FIT_HEADERS} DESTINATION include/Minuit2/Fit)
+install(FILES ${MATH_HEADERS} DESTINATION include/Minuit2/Math)
