@@ -1,7 +1,11 @@
-cmake_minimum_required(VERSION 3.1...3.11)
+cmake_minimum_required(VERSION 3.1)
 
-if(${CMAKE_VERSION} VERSION_LESS 3.12)
-    cmake_policy(VERSION ${CMAKE_VERSION})
+# Tested with and supporting policies up to the following CMake version. 
+# Not using ... syntax due to parser bug in MSVC's built-in CMake
+if(${CMAKE_VERSION} VERSION_LESS 3.11)
+    cmake_policy(VERSION ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION})
+else()
+    cmake_policy(VERSION 3.11)
 endif()
 
 include(FeatureSummary)
@@ -52,28 +56,21 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-    # Avoid name collisions when used as a subproject
-    set(Minuit2MathTarget Math)
-    set(Minuit2CommonTarget Common)
-else()
-    set(Minuit2MathTarget Minuit2Math)
-    set(Minuit2CommonTarget Minuit2Common)
 endif()
 
-# Common features to all packages (${Minuit2CommonTarget} and Minuit2)
+# Common features to all packages (Math and Minuit2)
 # If using this with add_subdirectory, the Minuit2
 # namespace does not get automatically prepended,
 # so including an alias for that.
-add_library(${Minuit2CommonTarget} INTERFACE)
-add_library(Minuit2::Common ALIAS ${Minuit2CommonTarget})
+add_library(Minuit2Common INTERFACE)
+add_library(Minuit2::Common ALIAS Minuit2Common)
 
 # OpenMP support
 if(minuit2_omp)
     if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
         message(STATUS "Building Minuit2 with OpenMP support")
     endif()
-    target_link_libraries(${Minuit2CommonTarget} INTERFACE OpenMP::OpenMP_CXX)
+    target_link_libraries(Minuit2Common INTERFACE OpenMP::OpenMP_CXX)
 endif()
 
 # MPI support
@@ -83,8 +80,8 @@ if(minuit2_mpi)
         message(STATUS "Building Minuit2 with MPI support")
         message(STATUS "Run: ${MPIEXEC} ${MPIEXEC_NUMPROC_FLAG} ${MPIEXEC_MAX_NUMPROCS} ${MPIEXEC_PREFLAGS} EXECUTABLE ${MPIEXEC_POSTFLAGS} ARGS")
     endif()
-    target_compile_definitions(${Minuit2CommonTarget} INTERFACE MPIPROC)
-    target_link_libraries(${Minuit2CommonTarget} INTERFACE MPI::MPI_CXX)
+    target_compile_definitions(Minuit2Common INTERFACE MPIPROC)
+    target_link_libraries(Minuit2Common INTERFACE MPI::MPI_CXX)
 endif()
 
 # Add the libraries
@@ -102,7 +99,7 @@ write_basic_package_version_file(
     )
 
 # Now, install the Interface targets
-install(TARGETS ${Minuit2CommonTarget}
+install(TARGETS Minuit2Common
         EXPORT Minuit2Targets
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
@@ -124,7 +121,7 @@ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/Minuit2Config.cmake" "${CMAKE_CURRENT
         )
 
 # Allow build directory to work for CMake import
-export(TARGETS ${Minuit2CommonTarget} ${Minuit2MathTarget} Minuit2 NAMESPACE Minuit2:: FILE Minuit2Targets.cmake)
+export(TARGETS Minuit2Common Minuit2Math Minuit2 NAMESPACE Minuit2:: FILE Minuit2Targets.cmake)
 export(PACKAGE Minuit2)
 
 # Only add tests and docs if this is the main project
