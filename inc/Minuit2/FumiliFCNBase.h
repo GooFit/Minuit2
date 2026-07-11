@@ -53,6 +53,8 @@ public:
 
    FumiliFCNBase() : fNumberOfParameters(0), fValue(0) {}
 
+   bool HasGradient() const override { return true; }
+
    /**
 
       Constructor which initializes the class with the function provided by the
@@ -68,21 +70,18 @@ public:
    {
    }
 
-   //   FumiliFCNBase(const ParametricFunction& modelFCN) { fModelFunction = &modelFCN; }
-
-   virtual ~FumiliFCNBase() {}
 
    /**
 
       Evaluate function Value, Gradient and Hessian using Fumili approximation, for values of parameters p
-      The resul is cached inside and is return from the FumiliFCNBase::Value ,  FumiliFCNBase::Gradient and
+      The result is cached inside and is return from the FumiliFCNBase::Value ,  FumiliFCNBase::Gradient and
       FumiliFCNBase::Hessian methods
 
       @param par vector of parameters
 
    **/
 
-   virtual void EvaluateAll(const std::vector<double> &par) = 0;
+   virtual void EvaluateAll(std::vector<double> const& par) = 0;
 
    /**
       Return cached Value of objective function estimated previously using the  FumiliFCNBase::EvaluateAll method
@@ -96,6 +95,7 @@ public:
    **/
 
    virtual const std::vector<double> &Gradient() const { return fGradient; }
+   std::vector<double> Gradient(std::vector<double> const&) const override { return fGradient;}
 
    /**
       Return Value of the i-th j-th element of the Hessian matrix estimated previously using the
@@ -104,6 +104,7 @@ public:
       @param col col Index of the matrix
    **/
 
+   std::vector<double> Hessian(std::vector<double> const&) const override { return fHessian;}
    virtual double Hessian(unsigned int row, unsigned int col) const
    {
       assert(row < fGradient.size() && col < fGradient.size());

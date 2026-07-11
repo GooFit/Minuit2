@@ -25,16 +25,9 @@ class MinimumSeed;
  */
 
 class SimplexBuilder : public MinimumBuilder {
-
 public:
-   SimplexBuilder() {}
-
-   ~SimplexBuilder() {}
-
-   virtual FunctionMinimum Minimum(const MnFcn &, const GradientCalculator &, const MinimumSeed &, const MnStrategy &,
-                                   unsigned int, double) const;
-
-private:
+   FunctionMinimum Minimum(const MnFcn &, const GradientCalculator &, const MinimumSeed &, const MnStrategy &,
+                           unsigned int, double) const override;
 };
 
 } // namespace Minuit2

@@ -35,11 +35,9 @@ public:
    {
    }
 
-   virtual ~HessianGradientCalculator() {}
+   FunctionGradient operator()(const MinimumParameters &) const override;
 
-   virtual FunctionGradient operator()(const MinimumParameters &) const;
-
-   virtual FunctionGradient operator()(const MinimumParameters &, const FunctionGradient &) const;
+   FunctionGradient operator()(const MinimumParameters &, const FunctionGradient &) const override;
 
    std::pair<FunctionGradient, MnAlgebraicVector>
    DeltaGradient(const MinimumParameters &, const FunctionGradient &) const;
@@ -50,8 +48,6 @@ public:
    const MnStrategy &Strategy() const { return fStrategy; }
 
    unsigned int Ncycle() const;
-   double StepTolerance() const;
-   double GradTolerance() const;
 
 private:
    const MnFcn &fFcn;

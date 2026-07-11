@@ -14,6 +14,8 @@
 #include "Minuit2/MnUserCovariance.h"
 #include "Minuit2/MnGlobalCorrelationCoeff.h"
 
+#include <ROOT/RSpan.hxx>
+
 #include <vector>
 #include <string>
 
@@ -35,60 +37,34 @@ class MnUserParameterState {
 public:
    /// default constructor (invalid state)
    MnUserParameterState()
-      : fValid(false), fCovarianceValid(false), fGCCValid(false), fCovStatus(-1), fFVal(0), fEDM(0), fNFcn(0),
-        fParameters(MnUserParameters()), fCovariance(MnUserCovariance()), fIntParameters(std::vector<double>()),
+      : fValid(false),
+        fCovStatus(-1),
+        fParameters(MnUserParameters()),
+        fCovariance(MnUserCovariance()),
+        fIntParameters(std::vector<double>()),
         fIntCovariance(MnUserCovariance())
    {
    }
 
    /// construct from user parameters (before minimization)
-   MnUserParameterState(const std::vector<double> &, const std::vector<double> &);
+   MnUserParameterState(std::span<const double>, std::span<const double>);
 
    MnUserParameterState(const MnUserParameters &);
 
    /// construct from user parameters + covariance (before minimization)
-   MnUserParameterState(const std::vector<double> &, const std::vector<double> &, unsigned int);
+   MnUserParameterState(std::span<const double>, std::span<const double>, unsigned int);
 
-   MnUserParameterState(const std::vector<double> &, const MnUserCovariance &);
+   MnUserParameterState(std::span<const double>, const MnUserCovariance &);
 
    MnUserParameterState(const MnUserParameters &, const MnUserCovariance &);
 
    /// construct from internal parameters (after minimization)
    MnUserParameterState(const MinimumState &, double, const MnUserTransformation &);
 
-   ~MnUserParameterState() {}
-
-   MnUserParameterState(const MnUserParameterState &state)
-      : fValid(state.fValid), fCovarianceValid(state.fCovarianceValid), fGCCValid(state.fGCCValid),
-        fCovStatus(state.fCovStatus), fFVal(state.fFVal), fEDM(state.fEDM), fNFcn(state.fNFcn),
-        fParameters(state.fParameters), fCovariance(state.fCovariance), fGlobalCC(state.fGlobalCC),
-        fIntParameters(state.fIntParameters), fIntCovariance(state.fIntCovariance)
-   {
-   }
-
-   MnUserParameterState &operator=(const MnUserParameterState &state)
-   {
-      if (this != &state) {
-         fValid = state.fValid;
-         fCovarianceValid = state.fCovarianceValid;
-         fGCCValid = state.fGCCValid;
-         fCovStatus = state.fCovStatus;
-         fFVal = state.fFVal;
-         fEDM = state.fEDM;
-         fNFcn = state.fNFcn;
-         fParameters = state.fParameters;
-         fCovariance = state.fCovariance;
-         fGlobalCC = state.fGlobalCC;
-         fIntParameters = state.fIntParameters;
-         fIntCovariance = state.fIntCovariance;
-      }
-      return *this;
-   }
-
    // user external representation
    const MnUserParameters &Parameters() const { return fParameters; }
    const MnUserCovariance &Covariance() const { return fCovariance; }
-   const MnGlobalCorrelationCoeff &GlobalCC() const { return fGlobalCC; }
+   MnGlobalCorrelationCoeff GlobalCC() const;
 
    // hessian (inverse of covariance matrix)
    MnUserCovariance Hessian() const;
@@ -105,7 +81,6 @@ public:
 
    bool IsValid() const { return fValid; }
    bool HasCovariance() const { return fCovarianceValid; }
-   bool HasGlobalCC() const { return fGCCValid; }
 
    double Fval() const { return fFVal; }
    double Edm() const { return fEDM; }
@@ -129,6 +104,9 @@ public:
    void Add(const std::string &name, double val, double err, double, double);
    // add const Parameter
    void Add(const std::string &, double);
+
+   // add covariance matrix
+   void AddCovariance(const MnUserCovariance &);
 
    // interaction via external number of Parameter
    void Fix(unsigned int);
@@ -161,7 +139,7 @@ public:
    unsigned int Index(const std::string &) const;
    // convert external number into Name of Parameter
    const std::string &GetName(unsigned int) const;
-   // mantain interface with const char * for backward compatibility
+   // maintain interface with const char * for backward compatibility
    const char *Name(unsigned int) const;
 
    // transformation internal <-> external
@@ -175,16 +153,14 @@ public:
 
 private:
    bool fValid;
-   bool fCovarianceValid;
-   bool fGCCValid;
+   bool fCovarianceValid = false;
    int fCovStatus; // covariance matrix status
-   double fFVal;
-   double fEDM;
-   unsigned int fNFcn;
+   double fFVal = 0.;
+   double fEDM = 0.;
+   unsigned int fNFcn = 0;
 
    MnUserParameters fParameters;
    MnUserCovariance fCovariance;
-   MnGlobalCorrelationCoeff fGlobalCC;
 
    std::vector<double> fIntParameters;
    MnUserCovariance fIntCovariance;

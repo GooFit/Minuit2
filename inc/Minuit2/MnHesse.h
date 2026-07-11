@@ -13,6 +13,8 @@
 #include "Minuit2/MnConfig.h"
 #include "Minuit2/MnStrategy.h"
 
+#include <ROOT/RSpan.hxx>
+
 #include <vector>
 
 namespace ROOT {
@@ -48,32 +50,10 @@ public:
    /// conctructor with specific strategy
    MnHesse(const MnStrategy &stra) : fStrategy(stra) {}
 
-   ~MnHesse() {}
-
-   ///
-   /// low-level API
-   ///
-   /// FCN + parameters + errors
-   MnUserParameterState operator()(const FCNBase &, const std::vector<double> &, const std::vector<double> &,
-                                   unsigned int maxcalls = 0) const;
-   /// FCN + parameters + covariance
-   MnUserParameterState operator()(const FCNBase &, const std::vector<double> &, unsigned int nrow,
-                                   const std::vector<double> &, unsigned int maxcalls = 0) const;
-   /// FCN + parameters + MnUserCovariance
-   MnUserParameterState
-   operator()(const FCNBase &, const std::vector<double> &, const MnUserCovariance &, unsigned int maxcalls = 0) const;
-   ///
-   /// high-level API
-   ///
-   /// FCN + MnUserParameters
-   MnUserParameterState operator()(const FCNBase &, const MnUserParameters &, unsigned int maxcalls = 0) const;
-   /// FCN + MnUserParameters + MnUserCovariance
-   MnUserParameterState
-   operator()(const FCNBase &, const MnUserParameters &, const MnUserCovariance &, unsigned int maxcalls = 0) const;
    /// FCN + MnUserParameterState
    MnUserParameterState operator()(const FCNBase &, const MnUserParameterState &, unsigned int maxcalls = 0) const;
    ///
-   /// API to use MnHesse after minimization when function mimimum is avalilable, otherwise information on the last
+   /// API to use MnHesse after minimization when function minimum is avalilable, otherwise information on the last
    /// state will be lost. (It would be needed to re-call the gradient and spend extra useless function calls) The
    /// Function Minimum is updated (modified) by adding the Hesse results as last state of minimization
    ///

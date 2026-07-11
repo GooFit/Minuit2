@@ -14,15 +14,12 @@
 
 #include "Minuit2/GradientCalculator.h"
 
-#include <vector>
-
 namespace ROOT {
 
 namespace Minuit2 {
 
 class MnFcn;
 class MnUserTransformation;
-class MnMachinePrecision;
 class MnStrategy;
 
 /**
@@ -37,22 +34,9 @@ public:
    {
    }
 
-   virtual ~Numerical2PGradientCalculator() {}
+   FunctionGradient operator()(const MinimumParameters &) const override;
 
-   virtual FunctionGradient operator()(const MinimumParameters &) const;
-
-   virtual FunctionGradient operator()(const std::vector<double> &params) const;
-
-   virtual FunctionGradient operator()(const MinimumParameters &, const FunctionGradient &) const;
-
-   const MnFcn &Fcn() const { return fFcn; }
-   const MnUserTransformation &Trafo() const { return fTransformation; }
-   const MnMachinePrecision &Precision() const;
-   const MnStrategy &Strategy() const { return fStrategy; }
-
-   unsigned int Ncycle() const;
-   double StepTolerance() const;
-   double GradTolerance() const;
+   FunctionGradient operator()(const MinimumParameters &, const FunctionGradient &) const override;
 
 private:
    const MnFcn &fFcn;

@@ -7,25 +7,15 @@
 add_subdirectory(math)
 
 set(MINUIT2_HEADERS
-    ABObj.h
-    ABProd.h
-    ABSum.h
-    ABTypes.h
     AnalyticalGradientCalculator.h
     BFGSErrorUpdator.h
-    BasicFunctionGradient.h
-    BasicFunctionMinimum.h
-    BasicMinimumError.h
-    BasicMinimumParameters.h
-    BasicMinimumSeed.h
-    BasicMinimumState.h
     CombinedMinimizer.h
     CombinedMinimumBuilder.h
     ContoursError.h
     DavidonErrorUpdator.h
+    ExternalInternalGradientCalculator.h
     FCNAdapter.h
     FCNBase.h
-    FCNGradAdapter.h
     FCNGradientBase.h
     FumiliBuilder.h
     FumiliChi2FCN.h
@@ -38,20 +28,10 @@ set(MINUIT2_HEADERS
     FumiliStandardChi2FCN.h
     FumiliStandardMaximumLikelihoodFCN.h
     FunctionGradient.h
-    FunctionMinimizer.h
     FunctionMinimum.h
-    GenericFunction.h
     GradientCalculator.h
     HessianGradientCalculator.h
     InitialGradientCalculator.h
-    LASymMatrix.h
-    LAVector.h
-    LaInverse.h
-    LaOuterProduct.h
-    LaProd.h
-    LaSum.h
-    MPIProcess.h
-    MatrixInverse.h
     MinimumBuilder.h
     MinimumError.h
     MinimumErrorUpdator.h
@@ -76,28 +56,27 @@ set(MINUIT2_HEADERS
     MnLineSearch.h
     MnMachinePrecision.h
     MnMatrix.h
+    MnMatrixfwd.h
     MnMigrad.h
     MnMinimize.h
     MnMinos.h
     MnParabola.h
     MnParabolaFactory.h
-    MnParabolaPoint.h
     MnParameterScan.h
+    MnParameterTransformation.h
     MnPlot.h
+    MnPoint.h
     MnPosDef.h
     MnPrint.h
     MnScan.h
     MnSeedGenerator.h
     MnSimplex.h
     MnStrategy.h
-    MnTiny.h
     MnTraceObject.h
     MnUserCovariance.h
-    MnUserFcn.h
     MnUserParameterState.h
     MnUserParameters.h
     MnUserTransformation.h
-    MnVectorTransform.h
     ModularFunctionMinimizer.h
     NegativeG2LineSearch.h
     Numerical2PGradientCalculator.h
@@ -108,22 +87,17 @@ set(MINUIT2_HEADERS
     SimplexMinimizer.h
     SimplexParameters.h
     SimplexSeedGenerator.h
-    SinParameterTransformation.h
-    SqrtLowParameterTransformation.h
-    SqrtUpParameterTransformation.h
-    StackAllocator.h
     VariableMetricBuilder.h
     VariableMetricEDMEstimator.h
     VariableMetricMinimizer.h
-    VectorOuterProduct.h
     )
 
 set(MINUIT2_SOURCES
     AnalyticalGradientCalculator.cxx
     BFGSErrorUpdator.cxx
-    BasicMinimumError.cxx
     CombinedMinimumBuilder.cxx
     DavidonErrorUpdator.cxx
+    ExternalInternalGradientCalculator.cxx
     FumiliBuilder.cxx
     FumiliErrorUpdator.cxx
     FumiliGradientCalculator.cxx
@@ -132,12 +106,6 @@ set(MINUIT2_SOURCES
     FumiliStandardMaximumLikelihoodFCN.cxx
     HessianGradientCalculator.cxx
     InitialGradientCalculator.cxx
-    LaEigenValues.cxx
-    LaInnerProduct.cxx
-    LaInverse.cxx
-    LaOuterProduct.cxx
-    LaSumOfElements.cxx
-    LaVtMVSimilarity.cxx
     MPIProcess.cxx
     MinimumBuilder.cxx
     Minuit2Minimizer.cxx
@@ -152,9 +120,11 @@ set(MINUIT2_SOURCES
     MnHesse.cxx
     MnLineSearch.cxx
     MnMachinePrecision.cxx
+    MnMatrix.cxx
     MnMinos.cxx
     MnParabolaFactory.cxx
     MnParameterScan.cxx
+    MnParameterTransformation.cxx
     MnPlot.cxx
     MnPosDef.cxx
     MnPrint.cxx
@@ -162,9 +132,7 @@ set(MINUIT2_SOURCES
     MnScan.cxx
     MnSeedGenerator.cxx
     MnStrategy.cxx
-    MnTiny.cxx
     MnTraceObject.cxx
-    MnUserFcn.cxx
     MnUserParameterState.cxx
     MnUserParameters.cxx
     MnUserTransformation.cxx
@@ -176,23 +144,10 @@ set(MINUIT2_SOURCES
     SimplexBuilder.cxx
     SimplexParameters.cxx
     SimplexSeedGenerator.cxx
-    SinParameterTransformation.cxx
-    SqrtLowParameterTransformation.cxx
-    SqrtUpParameterTransformation.cxx
     VariableMetricBuilder.cxx
     VariableMetricEDMEstimator.cxx
     mnbins.cxx
-    mndasum.cxx
-    mndaxpy.cxx
-    mnddot.cxx
-    mndscal.cxx
-    mndspmv.cxx
-    mndspr.cxx
-    mnlsame.cxx
-    mnteigen.cxx
     mntplot.cxx
-    mnvert.cxx
-    mnxerbla.cxx
     )
 
 prepend_path(MINUIT2_HEADERS "${Minuit2_SOURCE_DIR}/inc/Minuit2" ${MINUIT2_HEADERS})
@@ -220,8 +175,8 @@ target_link_libraries(Minuit2 PUBLIC Minuit2Math Minuit2Common)
 
 install(TARGETS Minuit2
         EXPORT Minuit2Targets
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
         )
 
 install(FILES ${MINUIT2_HEADERS} DESTINATION include/Minuit2/Minuit2)

@@ -48,8 +48,6 @@ class FumiliMaximumLikelihoodFCN : public FumiliFCNBase {
 public:
    FumiliMaximumLikelihoodFCN() {}
 
-   virtual ~FumiliMaximumLikelihoodFCN() {}
-
    /**
 
    Sets the model function for the data (for example gaussian+linear for a peak)
@@ -84,14 +82,14 @@ public:
 
    */
 
-   virtual std::vector<double> Elements(const std::vector<double> &par) const = 0;
+   virtual std::vector<double> Elements(std::vector<double> const &par) const = 0;
 
    /**
 
    Accessor to the parameters of a given measurement. For example in the
    case of a chi-square fit with a one-dimensional Gaussian, the Parameter
    characterizing the measurement will be the position. It is the Parameter
-   that is feeded to the model function.
+   that is passed to the model function.
 
    @param Index Index of the measueremnt the parameters of which to return
    @return A vector containing the values characterizing a measurement
@@ -126,7 +124,7 @@ public:
 
    */
 
-   double operator()(const std::vector<double> &par) const
+   double operator()(std::vector<double> const &par) const override
    {
 
       double sumoflogs = 0.0;
@@ -138,7 +136,7 @@ public:
          // for max likelihood probability have to be positive
          assert(tmp >= 0);
          sumoflogs -= ROOT::Math::Util::EvalLog(tmp);
-         // std::cout << " i " << tmp << " lik " << sumoflogs << std::endl;
+         // std::cout << " i " << tmp << " likelihood " << sumoflogs << std::endl;
       }
 
       return sumoflogs;
@@ -150,7 +148,7 @@ public:
 
    */
 
-   virtual double Up() const { return 0.5; }
+   double Up() const override { return 0.5; }
 
 private:
    // A pointer to the model function which describes the data

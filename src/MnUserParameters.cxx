@@ -13,7 +13,7 @@ namespace ROOT {
 
 namespace Minuit2 {
 
-MnUserParameters::MnUserParameters(const std::vector<double> &par, const std::vector<double> &err)
+MnUserParameters::MnUserParameters(std::span<const double> par, std::span<const double> err)
    : fTransformation(par, err)
 {
 }
@@ -212,7 +212,7 @@ const char *MnUserParameters::Name(unsigned int n) const
 
 const MnMachinePrecision &MnUserParameters::Precision() const
 {
-   // get global paramter precision
+   // get global parameter precision
    return fTransformation.Precision();
 }
 

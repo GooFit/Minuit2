@@ -9,25 +9,30 @@
 
 #include "Minuit2/MnStrategy.h"
 
+#include <algorithm>
+#include <limits>
+
 namespace ROOT {
 
 namespace Minuit2 {
 
-MnStrategy::MnStrategy() : fStoreLevel(1)
+MnStrategy::MnStrategy() : fHessCFDG2(0), fHessForcePosDef(1), fStoreLevel(1)
 {
    // default strategy
    SetMediumStrategy();
 }
 
-MnStrategy::MnStrategy(unsigned int stra) : fStoreLevel(1)
+MnStrategy::MnStrategy(unsigned int stra) : fHessCFDG2(0), fHessForcePosDef(1), fStoreLevel(1)
 {
-   // user defined strategy (0, 1, >=2)
+   // user defined strategy (0, 1, 2, >=3)
    if (stra == 0)
       SetLowStrategy();
    else if (stra == 1)
       SetMediumStrategy();
-   else
+   else if (stra == 2)
       SetHighStrategy();
+   else
+      SetVeryHighStrategy();
 }
 
 void MnStrategy::SetLowStrategy()
@@ -41,6 +46,7 @@ void MnStrategy::SetLowStrategy()
    SetHessianStepTolerance(0.5);
    SetHessianG2Tolerance(0.1);
    SetHessianGradientNCycles(1);
+   SetHessianCentralFDMixedDerivatives(0);
 }
 
 void MnStrategy::SetMediumStrategy()
@@ -54,6 +60,7 @@ void MnStrategy::SetMediumStrategy()
    SetHessianStepTolerance(0.3);
    SetHessianG2Tolerance(0.05);
    SetHessianGradientNCycles(2);
+   SetHessianCentralFDMixedDerivatives(0);
 }
 
 void MnStrategy::SetHighStrategy()
@@ -67,6 +74,36 @@ void MnStrategy::SetHighStrategy()
    SetHessianStepTolerance(0.1);
    SetHessianG2Tolerance(0.02);
    SetHessianGradientNCycles(6);
+   SetHessianCentralFDMixedDerivatives(0);
+}
+
+void MnStrategy::SetVeryHighStrategy()
+{
+    // set very high strategy (3)
+    fStrategy = 3;
+    SetGradientNCycles(5);
+    SetGradientStepTolerance(0.1);
+    SetGradientTolerance(0.02);
+    SetHessianNCycles(7);
+    SetHessianStepTolerance(0.);
+    SetHessianG2Tolerance(0.);
+    SetHessianGradientNCycles(6);
+    SetHessianCentralFDMixedDerivatives(1);
+    SetHessianForcePosDef(0);
+}
+
+MnStrategy MnStrategy::NextLower() const
+{
+   return MnStrategy(std::max(0, int(fStrategy - 1)));
+}
+
+double MnStrategy::HessianRecomputeThreshold() const
+{
+   if (fStrategy == 0)
+      return std::numeric_limits<double>::infinity();
+   if (fStrategy == 1)
+      return 0.05;
+   return -std::numeric_limits<double>::infinity();
 }
 
 } // namespace Minuit2

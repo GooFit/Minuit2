@@ -30,7 +30,7 @@ calculated for each measurement point, which is implemented by the
 operator() member function. The user still has to implement the calculation
 of the individual figures-of-merit (which in the majority of the cases
 will be the (measured Value - the Value predicted by the model)/standard deviation
-implemeted by the FumiliStandardChi2FCN;
+implemented by the FumiliStandardChi2FCN;
 however this form can become more complicated (see for an example Numerical Recipes'
 section on "Straight-Line Data with Errors in Both Coordinates")).
 
@@ -49,10 +49,6 @@ section 5
 class FumiliChi2FCN : public FumiliFCNBase {
 
 public:
-   FumiliChi2FCN() {}
-
-   virtual ~FumiliChi2FCN() {}
-
    /**
 
    Sets the model function for the data (for example gaussian+linear for a peak)
@@ -87,14 +83,14 @@ public:
 
    */
 
-   virtual std::vector<double> Elements(const std::vector<double> &par) const = 0;
+   virtual std::vector<double> Elements(std::vector<double> const &par) const = 0;
 
    /**
 
    Accessor to the parameters of a given measurement. For example in the
    case of a chi-square fit with a one-dimensional Gaussian, the Parameter
    characterizing the measurement will be the position. It is the Parameter
-   that is feeded to the model function.
+   that is passed to the model function.
 
    @param Index Index of the measueremnt the parameters of which to return
    @return A reference to a vector containing the values characterizing a measurement
@@ -129,7 +125,7 @@ public:
 
    */
 
-   double operator()(const std::vector<double> &par) const
+   double operator()(std::vector<double> const &par) const override
    {
 
       double chiSquare = 0.0;
@@ -148,7 +144,7 @@ public:
 
    */
 
-   virtual double Up() const { return 1.0; }
+   double Up() const override { return 1.0; }
 
 private:
    // A pointer to the model function which describes the data

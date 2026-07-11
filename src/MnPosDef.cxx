@@ -13,12 +13,11 @@
 #include "Minuit2/MnPrint.h"
 
 #include <algorithm>
+#include <iostream>
 
 namespace ROOT {
 
 namespace Minuit2 {
-
-LAVector eigenvalues(const LASymMatrix &);
 
 MinimumState MnPosDef::operator()(const MinimumState &st, const MnMachinePrecision &prec) const
 {
@@ -36,14 +35,14 @@ MinimumError MnPosDef::operator()(const MinimumError &e, const MnMachinePrecisio
    MnAlgebraicSymMatrix err(e.InvHessian());
    if (err.size() == 1 && err(0, 0) < prec.Eps()) {
       err(0, 0) = 1.;
-      return MinimumError(err, MinimumError::MnMadePosDef());
+      return MinimumError(err, MinimumError::MnMadePosDef);
    }
    if (err.size() == 1 && err(0, 0) > prec.Eps()) {
       return e;
    }
    //   std::cout<<"MnPosDef init matrix= "<<err<<std::endl;
 
-   double epspdf = std::max(1.e-6, prec.Eps2());
+   double epspdf = std::max(1.e-12, prec.Eps2()); // should this lower bound be configurable?
    double dgmin = err(0, 0);
 
    for (unsigned int i = 0; i < err.Nrow(); i++) {
@@ -85,10 +84,10 @@ MinimumError MnPosDef::operator()(const MinimumError &e, const MnMachinePrecisio
    if (pmin > epspdf * pmax)
       return MinimumError(err, e.Dcovar());
 
-   double padd = 0.001 * pmax - pmin;
+   double pAdd = 0.001 * pmax - pmin;
 
    for (unsigned int i = 0; i < err.Nrow(); i++)
-      err(i, i) *= (1. + padd);
+      err(i, i) *= (1. + pAdd);
 
    print.Debug([&](std::ostream &os) {
       os << "Eigenvalues:";
@@ -98,9 +97,9 @@ MinimumError MnPosDef::operator()(const MinimumError &e, const MnMachinePrecisio
 
    //   std::cout<<"MnPosDef final matrix: "<<err<<std::endl;
 
-   print.Warn("Matrix forced pos-def by adding to diagonal", padd);
+   print.Warn("Matrix forced pos-def by adding to diagonal", pAdd);
 
-   return MinimumError(err, MinimumError::MnMadePosDef());
+   return MinimumError(err, MinimumError::MnMadePosDef);
 }
 
 } // namespace Minuit2

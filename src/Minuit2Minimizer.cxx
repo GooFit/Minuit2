@@ -19,14 +19,12 @@
 
 #include "Minuit2/FCNAdapter.h"
 #include "Minuit2/FumiliFCNAdapter.h"
-#include "Minuit2/FCNGradAdapter.h"
 #include "Minuit2/FunctionMinimum.h"
 #include "Minuit2/MnMigrad.h"
 #include "Minuit2/MnMinos.h"
 #include "Minuit2/MinosError.h"
 #include "Minuit2/MnHesse.h"
 #include "Minuit2/MinuitParameter.h"
-#include "Minuit2/MnUserFcn.h"
 #include "Minuit2/MnPrint.h"
 #include "Minuit2/VariableMetricMinimizer.h"
 #include "Minuit2/SimplexMinimizer.h"
@@ -44,6 +42,7 @@
 #include <functional>
 
 #ifdef USE_ROOT_ERROR
+#include "TError.h"
 #include "TROOT.h"
 #include "TMinuit2TraceObject.h"
 #endif
@@ -82,14 +81,13 @@ int ControlPrintLevel()
 void RestoreGlobalPrintLevel(int) {}
 #endif
 
-Minuit2Minimizer::Minuit2Minimizer(ROOT::Minuit2::EMinimizerType type)
-   : Minimizer(), fDim(0), fMinimizer(0), fMinuitFCN(0), fMinimum(0)
+Minuit2Minimizer::Minuit2Minimizer(ROOT::Minuit2::EMinimizerType type) : fDim(0)
 {
    // Default constructor implementation depending on minimizer type
    SetMinimizerType(type);
 }
 
-Minuit2Minimizer::Minuit2Minimizer(const char *type) : Minimizer(), fDim(0), fMinimizer(0), fMinuitFCN(0), fMinimum(0)
+Minuit2Minimizer::Minuit2Minimizer(const char *type) : fDim(0)
 {
    // constructor from a string
 
@@ -104,7 +102,7 @@ Minuit2Minimizer::Minuit2Minimizer(const char *type) : Minimizer(), fDim(0), fMi
       algoType = kCombined;
    if (algoname == "scan")
       algoType = kScan;
-   if (algoname == "fumili")
+   if (algoname == "fumili" || algoname == "fumili2")
       algoType = kFumili;
    if (algoname == "bfgs")
       algoType = kMigradBFGS;
@@ -117,62 +115,31 @@ void Minuit2Minimizer::SetMinimizerType(ROOT::Minuit2::EMinimizerType type)
    // Set  minimizer algorithm type
    fUseFumili = false;
    switch (type) {
-   case ROOT::Minuit2::kMigrad:
-      // std::cout << "Minuit2Minimizer: minimize using MIGRAD " << std::endl;
-      SetMinimizer(new ROOT::Minuit2::VariableMetricMinimizer());
-      return;
+   case ROOT::Minuit2::kMigrad: fMinimizer = std::make_unique<ROOT::Minuit2::VariableMetricMinimizer>(); return;
    case ROOT::Minuit2::kMigradBFGS:
-      // std::cout << "Minuit2Minimizer: minimize using MIGRAD " << std::endl;
-      SetMinimizer(new ROOT::Minuit2::VariableMetricMinimizer(VariableMetricMinimizer::BFGSType()));
+      fMinimizer = std::make_unique<ROOT::Minuit2::VariableMetricMinimizer>(VariableMetricMinimizer::BFGSType());
       return;
-   case ROOT::Minuit2::kSimplex:
-      // std::cout << "Minuit2Minimizer: minimize using SIMPLEX " << std::endl;
-      SetMinimizer(new ROOT::Minuit2::SimplexMinimizer());
-      return;
-   case ROOT::Minuit2::kCombined: SetMinimizer(new ROOT::Minuit2::CombinedMinimizer()); return;
-   case ROOT::Minuit2::kScan: SetMinimizer(new ROOT::Minuit2::ScanMinimizer()); return;
+   case ROOT::Minuit2::kSimplex: fMinimizer = std::make_unique<ROOT::Minuit2::SimplexMinimizer>(); return;
+   case ROOT::Minuit2::kCombined: fMinimizer = std::make_unique<ROOT::Minuit2::CombinedMinimizer>(); return;
+   case ROOT::Minuit2::kScan: fMinimizer = std::make_unique<ROOT::Minuit2::ScanMinimizer>(); return;
    case ROOT::Minuit2::kFumili:
-      SetMinimizer(new ROOT::Minuit2::FumiliMinimizer());
+      fMinimizer = std::make_unique<ROOT::Minuit2::FumiliMinimizer>();
       fUseFumili = true;
       return;
    default:
       // migrad minimizer
-      SetMinimizer(new ROOT::Minuit2::VariableMetricMinimizer());
+      fMinimizer = std::make_unique<ROOT::Minuit2::VariableMetricMinimizer>();
    }
 }
 
-Minuit2Minimizer::~Minuit2Minimizer()
-{
-   // Destructor implementation.
-   if (fMinimizer)
-      delete fMinimizer;
-   if (fMinuitFCN)
-      delete fMinuitFCN;
-   if (fMinimum)
-      delete fMinimum;
-}
-
-Minuit2Minimizer::Minuit2Minimizer(const Minuit2Minimizer &) : ROOT::Math::Minimizer()
-{
-   // Implementation of copy constructor.
-}
-
-Minuit2Minimizer &Minuit2Minimizer::operator=(const Minuit2Minimizer &rhs)
-{
-   // Implementation of assignment operator.
-   if (this == &rhs)
-      return *this; // time saving self-test
-   return *this;
-}
+Minuit2Minimizer::~Minuit2Minimizer() = default;
 
 void Minuit2Minimizer::Clear()
 {
    // delete the state in case of consecutive minimizations
    fState = MnUserParameterState();
    // clear also the function minimum
-   if (fMinimum)
-      delete fMinimum;
-   fMinimum = 0;
+   fMinimum.reset();
 }
 
 // set variables
@@ -190,17 +157,42 @@ bool Minuit2Minimizer::SetVariable(unsigned int ivar, const std::string &name, d
 
    if (step <= 0) {
       print.Info("Parameter", name, "has zero or invalid step size - consider it as constant");
-      fState.Add(name.c_str(), val);
+      fState.Add(name, val);
    } else
-      fState.Add(name.c_str(), val, step);
+      fState.Add(name, val, step);
 
-   unsigned int minuit2Index = fState.Index(name.c_str());
+   unsigned int minuit2Index = fState.Index(name);
    if (minuit2Index != ivar) {
       print.Warn("Wrong index", minuit2Index, "used for the variable", name);
       ivar = minuit2Index;
       return false;
    }
    fState.RemoveLimits(ivar);
+
+   return true;
+}
+
+/** set initial second derivatives
+ */
+bool Minuit2Minimizer::SetCovarianceDiag(std::span<const double> d2, unsigned int n)
+{
+   MnPrint print("Minuit2Minimizer::SetCovarianceDiag", PrintLevel());
+
+   std::vector<double> cov(n * (n + 1) / 2);
+
+   for (unsigned int i = 0; i < n; i++) {
+      for (unsigned int j = i; j < n; j++)
+         cov[i + j * (j + 1) / 2] = (i == j) ? d2[i] : 0.;
+   }
+
+   return Minuit2Minimizer::SetCovariance(cov, n);
+}
+
+bool Minuit2Minimizer::SetCovariance(std::span<const double> cov, unsigned int nrow)
+{
+   MnPrint print("Minuit2Minimizer::SetCovariance", PrintLevel());
+
+   fState.AddCovariance({cov, nrow});
 
    return true;
 }
@@ -242,7 +234,7 @@ bool Minuit2Minimizer::SetFixedVariable(unsigned int ivar, const std::string &na
    // use 10%
    double step = (val != 0) ? 0.1 * std::abs(val) : 0.1;
    if (!SetVariable(ivar, name, val, step)) {
-      ivar = fState.Index(name.c_str());
+      ivar = fState.Index(name);
    }
    fState.Fix(ivar);
    return true;
@@ -378,47 +370,94 @@ bool Minuit2Minimizer::GetVariableSettings(unsigned int ivar, ROOT::Fit::Paramet
 void Minuit2Minimizer::SetFunction(const ROOT::Math::IMultiGenFunction &func)
 {
    // set function to be minimized
-   if (fMinuitFCN)
-      delete fMinuitFCN;
+   fMinuitFCN.reset();
    fDim = func.NDim();
+   const bool hasGrad = func.HasGradient();
    if (!fUseFumili) {
-      fMinuitFCN = new ROOT::Minuit2::FCNAdapter<ROOT::Math::IMultiGenFunction>(func, ErrorDef());
-   } else {
+      auto lambdaFunc = [&func](double const *params) { return func(params); };
+      auto adapter = std::make_unique<ROOT::Minuit2::FCNAdapter>(lambdaFunc, ErrorDef());
+      if (hasGrad) {
+         auto const &gradFunc = dynamic_cast<ROOT::Math::IMultiGradFunction const &>(func);
+         auto lambdaGrad = [&gradFunc](double const *params, double *grad) { return gradFunc.Gradient(params, grad); };
+         adapter->SetGradientFunction(lambdaGrad);
+      }
+      fMinuitFCN = std::move(adapter);
+      return;
+   }
+   if (hasGrad) {
       // for Fumili the fit method function interface is required
-      const ROOT::Math::FitMethodFunction *fcnfunc = dynamic_cast<const ROOT::Math::FitMethodFunction *>(&func);
+      auto fcnfunc = dynamic_cast<const ROOT::Math::FitMethodGradFunction *>(&func);
       if (!fcnfunc) {
          MnPrint print("Minuit2Minimizer", PrintLevel());
          print.Error("Wrong Fit method function for Fumili");
          return;
       }
-      fMinuitFCN = new ROOT::Minuit2::FumiliFCNAdapter<ROOT::Math::FitMethodFunction>(*fcnfunc, fDim, ErrorDef());
+      fMinuitFCN = std::make_unique<ROOT::Minuit2::FumiliFCNAdapter<ROOT::Math::FitMethodGradFunction>>(*fcnfunc, fDim,
+                                                                                                        ErrorDef());
+   } else {
+      // for Fumili the fit method function interface is required
+      auto fcnfunc = dynamic_cast<const ROOT::Math::FitMethodFunction *>(&func);
+      if (!fcnfunc) {
+         MnPrint print("Minuit2Minimizer", PrintLevel());
+         print.Error("Wrong Fit method function for Fumili");
+         return;
+      }
+      fMinuitFCN =
+         std::make_unique<ROOT::Minuit2::FumiliFCNAdapter<ROOT::Math::FitMethodFunction>>(*fcnfunc, fDim, ErrorDef());
    }
 }
 
-void Minuit2Minimizer::SetFunction(const ROOT::Math::IMultiGradFunction &func)
+void Minuit2Minimizer::SetHessianFunction(std::function<bool(std::span<const double>, double *)> hfunc)
 {
-   // set function to be minimized
-   fDim = func.NDim();
-   if (fMinuitFCN)
-      delete fMinuitFCN;
-   if (!fUseFumili) {
-      fMinuitFCN = new ROOT::Minuit2::FCNGradAdapter<ROOT::Math::IMultiGradFunction>(func, ErrorDef());
-   } else {
-      // for Fumili the fit method function interface is required
-      const ROOT::Math::FitMethodGradFunction *fcnfunc = dynamic_cast<const ROOT::Math::FitMethodGradFunction *>(&func);
-      if (!fcnfunc) {
-         MnPrint print("Minuit2Minimizer", PrintLevel());
-         print.Error("Wrong Fit method function for Fumili");
-         return;
-      }
-      fMinuitFCN = new ROOT::Minuit2::FumiliFCNAdapter<ROOT::Math::FitMethodGradFunction>(*fcnfunc, fDim, ErrorDef());
-   }
+   // for Fumili not supported for the time being
+   if (fUseFumili) return;
+   auto fcn = static_cast<ROOT::Minuit2::FCNAdapter *>(fMinuitFCN.get());
+   if (!fcn) return;
+   fcn->SetHessianFunction(hfunc);
 }
 
+namespace {
+
+ROOT::Minuit2::MnStrategy customizedStrategy(unsigned int strategyLevel, ROOT::Math::MinimizerOptions const &options)
+{
+   ROOT::Minuit2::MnStrategy st{strategyLevel};
+   // set strategy and add extra options if needed
+   const ROOT::Math::IOptions *minuit2Opt = options.ExtraOptions();
+   if (!minuit2Opt) {
+      minuit2Opt = ROOT::Math::MinimizerOptions::FindDefault("Minuit2");
+   }
+   if (!minuit2Opt) {
+      return st;
+   }
+   auto customize = [&minuit2Opt](const char *name, auto val) {
+      minuit2Opt->GetValue(name, val);
+      return val;
+   };
+   // set extra  options
+   st.SetGradientNCycles(customize("GradientNCycles", int(st.GradientNCycles())));
+   st.SetHessianNCycles(customize("HessianNCycles", int(st.HessianNCycles())));
+   st.SetHessianGradientNCycles(customize("HessianGradientNCycles", int(st.HessianGradientNCycles())));
+
+   st.SetGradientTolerance(customize("GradientTolerance", st.GradientTolerance()));
+   st.SetGradientStepTolerance(customize("GradientStepTolerance", st.GradientStepTolerance()));
+   st.SetHessianStepTolerance(customize("HessianStepTolerance", st.HessianStepTolerance()));
+   st.SetHessianG2Tolerance(customize("HessianG2Tolerance", st.HessianG2Tolerance()));
+
+   return st;
+}
+
+} // namespace
+
+/// Perform the minimization and store a copy of FunctionMinimum.
+/// The maximum number of function calls used can be checked via `this->MaxFunctionCalls()`,
+/// if this value is 0 (the default), then it is replaced with
+/// `2 * (nvar + 1) * (200 + 100 * nvar + 5 * nvar * nvar` where `nvar` is number of variable parameters.
+/// \see MnMinos::FindCrossValue
+/// Other minimization settings can be retrieved via `Tolerance()`, `Strategy()`, `ErrorDef()`, `Precision()`
+/// \see ROOT::Math::MinimizerOptions::PrintDefault()
 bool Minuit2Minimizer::Minimize()
 {
-   // perform the minimization
-   // store a copy of FunctionMinimum
+
 
    MnPrint print("Minuit2Minimizer::Minimize", PrintLevel());
 
@@ -427,12 +466,10 @@ bool Minuit2Minimizer::Minimize()
       return false;
    }
 
-   assert(GetMinimizer() != 0);
+   assert(GetMinimizer() != nullptr);
 
    // delete result of previous minimization
-   if (fMinimum)
-      delete fMinimum;
-   fMinimum = 0;
+   fMinimum.reset();
 
    const int maxfcn = MaxFunctionCalls();
    const double tol = Tolerance();
@@ -440,8 +477,9 @@ bool Minuit2Minimizer::Minimize()
    fMinuitFCN->SetErrorDef(ErrorDef());
 
    const int printLevel = PrintLevel();
+   print.Debug("Minuit print level is", printLevel);
    if (PrintLevel() >= 1) {
-      // print the real number of maxfcn used (defined in ModularFuncitonMinimizer)
+      // print the real number of maxfcn used (defined in ModularFunctionMinimizer)
       int maxfcn_used = maxfcn;
       if (maxfcn_used == 0) {
          int nvar = fState.VariableParameters();
@@ -462,42 +500,28 @@ bool Minuit2Minimizer::Minimize()
    if (Precision() > 0)
       fState.SetPrecision(Precision());
 
-   // set strategy and add extra options if needed
-   ROOT::Minuit2::MnStrategy strategy(strategyLevel);
-   ROOT::Math::IOptions *minuit2Opt = ROOT::Math::MinimizerOptions::FindDefault("Minuit2");
+   // add extra options if needed
+   const ROOT::Math::IOptions *minuit2Opt = fOptions.ExtraOptions();
+   if (!minuit2Opt) {
+      minuit2Opt = ROOT::Math::MinimizerOptions::FindDefault("Minuit2");
+   }
    if (minuit2Opt) {
       // set extra  options
-      int nGradCycles = strategy.GradientNCycles();
-      int nHessCycles = strategy.HessianNCycles();
-      int nHessGradCycles = strategy.HessianGradientNCycles();
-
-      double gradTol = strategy.GradientTolerance();
-      double gradStepTol = strategy.GradientStepTolerance();
-      double hessStepTol = strategy.HessianStepTolerance();
-      double hessG2Tol = strategy.HessianG2Tolerance();
-
-      minuit2Opt->GetValue("GradientNCycles", nGradCycles);
-      minuit2Opt->GetValue("HessianNCycles", nHessCycles);
-      minuit2Opt->GetValue("HessianGradientNCycles", nHessGradCycles);
-
-      minuit2Opt->GetValue("GradientTolerance", gradTol);
-      minuit2Opt->GetValue("GradientStepTolerance", gradStepTol);
-      minuit2Opt->GetValue("HessianStepTolerance", hessStepTol);
-      minuit2Opt->GetValue("HessianG2Tolerance", hessG2Tol);
-
-      strategy.SetGradientNCycles(nGradCycles);
-      strategy.SetHessianNCycles(nHessCycles);
-      strategy.SetHessianGradientNCycles(nHessGradCycles);
-
-      strategy.SetGradientTolerance(gradTol);
-      strategy.SetGradientStepTolerance(gradStepTol);
-      strategy.SetHessianStepTolerance(hessStepTol);
-      strategy.SetHessianG2Tolerance(hessStepTol);
-
       int storageLevel = 1;
       bool ret = minuit2Opt->GetValue("StorageLevel", storageLevel);
       if (ret)
          SetStorageLevel(storageLevel);
+
+      // fumili options
+      if (fUseFumili) {
+         std::string fumiliMethod;
+         ret = minuit2Opt->GetValue("FumiliMethod", fumiliMethod);
+         if (ret) {
+            auto fumiliMinimizer = dynamic_cast<ROOT::Minuit2::FumiliMinimizer *>(fMinimizer.get());
+            if (fumiliMinimizer)
+               fumiliMinimizer->SetMethod(fumiliMethod);
+         }
+      }
 
       if (printLevel > 0) {
          std::cout << "Minuit2Minimizer::Minuit  - Changing default options" << std::endl;
@@ -507,7 +531,7 @@ bool Minuit2Minimizer::Minimize()
 
    // set a minimizer tracer object (default for printlevel=10, from gROOT for printLevel=11)
    // use some special print levels
-   MnTraceObject *traceObj = 0;
+   MnTraceObject *traceObj = nullptr;
 #ifdef USE_ROOT_ERROR
    if (printLevel == 10 && gROOT) {
       TObject *obj = gROOT->FindObject("Minuit2TraceObject");
@@ -537,18 +561,15 @@ bool Minuit2Minimizer::Minimize()
       SetTraceObject(*traceObj);
    }
 
-   const ROOT::Minuit2::FCNGradientBase *gradFCN = dynamic_cast<const ROOT::Minuit2::FCNGradientBase *>(fMinuitFCN);
-   if (gradFCN != 0) {
-      // use gradient
-      // SetPrintLevel(3);
-      ROOT::Minuit2::FunctionMinimum min = GetMinimizer()->Minimize(*gradFCN, fState, strategy, maxfcn, tol);
-      fMinimum = new ROOT::Minuit2::FunctionMinimum(min);
-   } else {
-      ROOT::Minuit2::FunctionMinimum min = GetMinimizer()->Minimize(*GetFCN(), fState, strategy, maxfcn, tol);
-      fMinimum = new ROOT::Minuit2::FunctionMinimum(min);
-   }
+   const ROOT::Minuit2::MnStrategy strategy = customizedStrategy(strategyLevel, fOptions);
 
-   // check if Hesse needs to be run
+   ROOT::Minuit2::FunctionMinimum min = GetMinimizer()->Minimize(*fMinuitFCN, fState, strategy, maxfcn, tol);
+   fMinimum = std::make_unique<ROOT::Minuit2::FunctionMinimum>(min);
+
+   // check if Hesse needs to be run. We do it when is requested (IsValidError() == true , set by SetParabError(true) in fitConfig)
+   // (IsValidError() means the flag to get correct error from the Minimizer is set (Minimizer::SetValidError())
+   // AND when we have a valid minimum,
+   // AND  when the the current covariance matrix is estimated using the iterative approximation (Dcovar != 0 , i.e. Hesse has not computed  before)
    if (fMinimum->IsValid() && IsValidError() && fMinimum->State().Error().Dcovar() != 0) {
       // run Hesse (Hesse will add results in the last state of fMinimum
       ROOT::Minuit2::MnHesse hesse(strategy);
@@ -580,7 +601,7 @@ bool Minuit2Minimizer::ExamineMinimum(const ROOT::Minuit2::FunctionMinimum &min)
    int debugLevel = PrintLevel();
    if (debugLevel >= 3) {
 
-      const std::vector<ROOT::Minuit2::MinimumState> &iterationStates = min.States();
+      std::span<const ROOT::Minuit2::MinimumState> iterationStates = min.States();
       std::cout << "Number of iterations " << iterationStates.size() << std::endl;
       for (unsigned int i = 0; i < iterationStates.size(); ++i) {
          // std::cout << iterationStates[i] << std::endl;
@@ -631,6 +652,7 @@ bool Minuit2Minimizer::ExamineMinimum(const ROOT::Minuit2::FunctionMinimum &min)
    bool validMinimum = min.IsValid();
    if (validMinimum) {
       // print a warning message in case something is not ok
+      // this for example is case when Covar was made posdef and fStatus=3
       if (fStatus != 0 && debugLevel > 0)
          print.Warn(txt);
    } else {
@@ -647,9 +669,9 @@ bool Minuit2Minimizer::ExamineMinimum(const ROOT::Minuit2::FunctionMinimum &min)
       PrintResults();
 
    // set the minimum values in the fValues vector
-   const std::vector<MinuitParameter> &paramsObj = fState.MinuitParameters();
-   if (paramsObj.size() == 0)
-      return 0;
+   std::span<const MinuitParameter> paramsObj = fState.MinuitParameters();
+   if (paramsObj.empty())
+      return false;
    assert(fDim == paramsObj.size());
    // re-size vector if it has changed after a new minimization
    if (fValues.size() != fDim)
@@ -687,7 +709,7 @@ void Minuit2Minimizer::PrintResults()
             std::cout << "+/-  " << par.Error() << std::endl;
       }
    } else {
-      std::cout << "Minuit2Minimizer : Invalid Minimum - status = " << fStatus << std::endl;
+      std::cout << "Minuit2Minimizer : Invalid minimum - status = " << fStatus << std::endl;
       std::cout << "FVAL  = " << fState.Fval() << std::endl;
       std::cout << "Edm   = " << fState.Edm() << std::endl;
       std::cout << "Nfcn  = " << fState.NFcn() << std::endl;
@@ -697,9 +719,9 @@ void Minuit2Minimizer::PrintResults()
 const double *Minuit2Minimizer::Errors() const
 {
    // return error at minimum (set to zero for fixed and constant params)
-   const std::vector<MinuitParameter> &paramsObj = fState.MinuitParameters();
-   if (paramsObj.size() == 0)
-      return 0;
+   std::span<const MinuitParameter> paramsObj = fState.MinuitParameters();
+   if (paramsObj.empty())
+      return nullptr;
    assert(fDim == paramsObj.size());
    // be careful for multiple calls of this function. I will redo an allocation here
    // only when size of vectors has changed (e.g. after a new minimization)
@@ -812,21 +834,27 @@ double Minuit2Minimizer::Correlation(unsigned int i, unsigned int j) const
    return 0;
 }
 
-double Minuit2Minimizer::GlobalCC(unsigned int i) const
+std::vector<double> Minuit2Minimizer::GlobalCC() const
 {
    // get global correlation coefficient for the parameter i. This is a number between zero and one which gives
    // the correlation between the i-th parameter  and that linear combination of all other parameters which
    // is most strongly correlated with i.
 
-   if (i >= fDim)
-      return 0;
+   std::vector<double> out;
+   MnGlobalCorrelationCoeff globalCC = fState.GlobalCC();
    // no info available when minimization has failed or has some problems
-   if (!fState.HasGlobalCC())
-      return 0;
-   if (fState.Parameter(i).IsFixed() || fState.Parameter(i).IsConst())
-      return 0;
-   unsigned int k = fState.IntOfExt(i);
-   return fState.GlobalCC().GlobalCC()[k];
+   if (!globalCC.IsValid())
+      return out;
+   out.resize(fDim);
+   for (unsigned int i = 0; i < fDim; ++i) {
+      if (fState.Parameter(i).IsFixed() || fState.Parameter(i).IsConst())
+         out[i] = 0;
+      else {
+         unsigned int k = fState.IntOfExt(i);
+         out[i] = globalCC.GlobalCC()[k];
+      }
+   }
+   return out;
 }
 
 bool Minuit2Minimizer::GetMinosError(unsigned int i, double &errLow, double &errUp, int runopt)
@@ -853,7 +881,7 @@ bool Minuit2Minimizer::GetMinosError(unsigned int i, double &errLow, double &err
    //       GetMinimizer()->Minimize(*GetFCN(),fState, ROOT::Minuit2::MnStrategy(strategy), MaxFunctionCalls(),
    //       Tolerance());
    //    fState = min.UserState();
-   if (fMinimum == 0) {
+   if (fMinimum == nullptr) {
       print.Error("Failed - no function minimum existing");
       return false;
    }
@@ -1024,7 +1052,7 @@ int Minuit2Minimizer::RunMinosError(unsigned int i, double &errLow, double &errU
 
    int mstatus = 0;
    if (lowerInvalid || upperInvalid) {
-      // set status accroding to bit
+      // set status according to bit
       // bit 1:  lower invalid Minos errors
       // bit 2:  upper invalid Minos error
       // bit 3:   invalid because max FCN
@@ -1132,7 +1160,7 @@ bool Minuit2Minimizer::Contour(unsigned int ipar, unsigned int jpar, unsigned in
 
    MnPrint print("Minuit2Minimizer::Contour", PrintLevel());
 
-   if (fMinimum == 0) {
+   if (fMinimum == nullptr) {
       print.Error("No function minimum existing; must minimize function before");
       return false;
    }
@@ -1149,7 +1177,7 @@ bool Minuit2Minimizer::Contour(unsigned int ipar, unsigned int jpar, unsigned in
       fMinimum->SetErrorDef(ErrorDef());
    }
 
-   print.Info("Computing contours -", ErrorDef());
+   print.Info("Computing contours at level -", ErrorDef());
 
    // switch off Minuit2 printing (for level of  0,1)
    const int prev_level = (PrintLevel() <= 1) ? TurnOffPrintInfoLevel() : -2;
@@ -1177,6 +1205,14 @@ bool Minuit2Minimizer::Contour(unsigned int ipar, unsigned int jpar, unsigned in
       x[i] = result[i].first;
       y[i] = result[i].second;
    }
+   print.Info([&](std::ostream &os) {
+                  os << " Computed " << npoints << " points at level " << ErrorDef();
+                  for (unsigned int i = 0; i < npoints; i++) {
+                     if (i %5 == 0) os << std::endl;
+                     os << "( " << x[i] << ", " << y[i] << ") ";
+                  }
+                  os << std::endl << std::endl;
+               });
 
    return true;
 }
@@ -1195,7 +1231,6 @@ bool Minuit2Minimizer::Hesse()
       return false;
    }
 
-   const int strategy = Strategy();
    const int maxfcn = MaxFunctionCalls();
    print.Info("Using max-calls", maxfcn);
 
@@ -1207,7 +1242,7 @@ bool Minuit2Minimizer::Hesse()
    if (Precision() > 0)
       fState.SetPrecision(Precision());
 
-   ROOT::Minuit2::MnHesse hesse(strategy);
+   ROOT::Minuit2::MnHesse hesse(customizedStrategy(Strategy(), fOptions));
 
    // case when function minimum exists
    if (fMinimum) {
@@ -1247,6 +1282,8 @@ bool Minuit2Minimizer::Hesse()
       covStatusType = "full but made positive defined";
    if (covStatus == 3)
       covStatusType = "accurate";
+   if (covStatus == 0)
+      covStatusType = "full but not positive defined";
 
    if (!fState.HasCovariance()) {
       // if false means error is not valid and this is due to a failure in Hesse
@@ -1304,17 +1341,21 @@ int Minuit2Minimizer::CovMatrixStatus() const
 void Minuit2Minimizer::SetTraceObject(MnTraceObject &obj)
 {
    // set trace object
-   if (!fMinimizer)
-      return;
-   fMinimizer->Builder().SetTraceObject(obj);
+   if (fMinimizer)
+      fMinimizer->Builder().SetTraceObject(obj);
 }
 
 void Minuit2Minimizer::SetStorageLevel(int level)
 {
    // set storage level
-   if (!fMinimizer)
-      return;
-   fMinimizer->Builder().SetStorageLevel(level);
+   if (fMinimizer)
+      fMinimizer->Builder().SetStorageLevel(level);
+}
+
+void Minuit2Minimizer::SetFCN(unsigned int nDim, std::unique_ptr<ROOT::Minuit2::FCNBase> fcn)
+{
+   fDim = nDim;
+   fMinuitFCN = std::move(fcn);
 }
 
 } // end namespace Minuit2

@@ -25,19 +25,9 @@ class MnStrategy;
    generate Simplex starting point (state)
  */
 class SimplexSeedGenerator : public MinimumSeedGenerator {
-
 public:
-   SimplexSeedGenerator() {}
-
-   ~SimplexSeedGenerator() {}
-
-   virtual MinimumSeed
-   operator()(const MnFcn &, const GradientCalculator &, const MnUserParameterState &, const MnStrategy &) const;
-
-   virtual MinimumSeed operator()(const MnFcn &, const AnalyticalGradientCalculator &, const MnUserParameterState &,
-                                  const MnStrategy &) const;
-
-private:
+   MinimumSeed operator()(const MnFcn &, const GradientCalculator &, const MnUserParameterState &,
+                          const MnStrategy &) const override;
 };
 
 } // namespace Minuit2

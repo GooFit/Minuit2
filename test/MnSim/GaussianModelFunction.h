@@ -14,7 +14,6 @@
 
 #include "Minuit2/ParametricFunction.h"
 
-#include "Minuit2/MnFcn.h"
 #include "Minuit2/MnStrategy.h"
 #include "Minuit2/MnUserParameterState.h"
 
@@ -80,9 +79,7 @@ public:
 
    */
 
-   GaussianModelFunction(const std::vector<double> &params) : ParametricFunction(params) { assert(params.size() == 1); }
-
-   ~GaussianModelFunction() {}
+   GaussianModelFunction(std::span<const double> params) : ParametricFunction(params) { assert(params.size() == 1); }
 
    /**
 
@@ -97,7 +94,7 @@ public:
 
    */
 
-   double operator()(const std::vector<double> &x) const
+   double operator()(std::vector<double> const &x) const override
    {
 
       assert(x.size() == 3);
@@ -118,7 +115,7 @@ public:
    @param x vector containing the mean, the standard deviation and the constant
    describing the Gaussian.
 
-   @param par vector containing the x coordinate (which is the Parameter in
+   @param param vector containing the x coordinate (which is the Parameter in
    the case of a minimization).
 
    @return the Value of the Gaussian for the given input.
@@ -128,7 +125,7 @@ public:
 
    */
 
-   double operator()(const std::vector<double> &x, const std::vector<double> &param) const
+   double operator()(std::vector<double> const &x, std::vector<double> const &param) const override
    {
 
       constexpr double two_pi = 2 * 3.14159265358979323846; // M_PI is not standard
@@ -146,12 +143,12 @@ public:
 
    */
 
-   virtual double Up() const { return 1.0; }
+   double Up() const override { return 1.0; }
 
-   std::vector<double> GetGradient(const std::vector<double> &x) const
+   std::vector<double> GetGradient(std::vector<double> const &x) const override
    {
 
-      const std::vector<double> &param = GetParameters();
+      std::span<const double> param = GetParameters();
       assert(param.size() == 1);
       std::vector<double> grad(x.size());
 

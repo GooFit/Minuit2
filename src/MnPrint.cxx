@@ -8,8 +8,6 @@
  **********************************************************************/
 
 #include "Minuit2/MnPrint.h"
-#include "Minuit2/LAVector.h"
-#include "Minuit2/LASymMatrix.h"
 #include "Minuit2/FunctionMinimum.h"
 #include "Minuit2/MnUserParameters.h"
 #include "Minuit2/MnUserCovariance.h"
@@ -209,36 +207,6 @@ std::ostream &operator<<(std::ostream &os, const MnPrint::Oneline &x)
    return os;
 }
 
-std::ostream &operator<<(std::ostream &os, const LAVector &vec)
-{
-   // print a vector
-   const int pr = os.precision(PRECISION);
-   const int nrow = vec.size();
-   for (int i = 0; i < nrow; i++) {
-      os << '\n';
-      os.width(WIDTH);
-      os << vec(i);
-   }
-   os.precision(pr);
-   return os;
-}
-
-std::ostream &operator<<(std::ostream &os, const LASymMatrix &matrix)
-{
-   // print a matrix
-   const int pr = os.precision(8);
-   const int n = matrix.Nrow();
-   for (int i = 0; i < n; i++) {
-      os << '\n';
-      for (int j = 0; j < n; j++) {
-         os.width(15);
-         os << matrix(i, j);
-      }
-   }
-   os.precision(pr);
-   return os;
-}
-
 std::ostream &operator<<(std::ostream &os, const MnUserParameters &par)
 {
    // print the MnUserParameter object
@@ -325,7 +293,7 @@ std::ostream &operator<<(std::ostream &os, const MnUserParameterState &state)
       os << state.Covariance();
    else
       os << "matrix is not present or not valid";
-   if (state.HasGlobalCC())
+   if (state.GlobalCC().IsValid())
       os << "\n  Global correlation coefficients: " << state.GlobalCC();
 
    os.precision(pr);

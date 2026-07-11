@@ -38,9 +38,7 @@ class MnUserParameters {
 public:
    MnUserParameters() : fTransformation(MnUserTransformation()) {}
 
-   MnUserParameters(const std::vector<double> &, const std::vector<double> &);
-
-   ~MnUserParameters() {}
+   MnUserParameters(std::span<const double>, std::span<const double>);
 
    MnUserParameters(const MnUserParameters &par) : fTransformation(par.fTransformation) {}
 
@@ -102,7 +100,7 @@ public:
    unsigned int Index(const std::string &) const;
    // convert external number into Name of Parameter
    const std::string &GetName(unsigned int) const;
-   // mantain interface with const char * for backward compatibility
+   // maintain interface with const char * for backward compatibility
    const char *Name(unsigned int) const;
 
    const MnMachinePrecision &Precision() const;

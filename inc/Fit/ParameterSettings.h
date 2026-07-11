@@ -8,20 +8,12 @@
  *                                                                    *
  **********************************************************************/
 
-// Header file for class ParameterSettings
-
 #ifndef ROOT_Fit_ParameterSettings
 #define ROOT_Fit_ParameterSettings
 
 #include <string>
 
-#include "Math/Error.h"
-
-
-namespace ROOT {
-
-   namespace Fit {
-
+namespace ROOT::Fit {
 
 //___________________________________________________________________________________
 /**
@@ -40,25 +32,19 @@ public:
    /**
       Default constructor
    */
-   ParameterSettings () :
-    fValue(0.), fStepSize(0.1), fFix(false),
-    fLowerLimit(0.), fUpperLimit(0.), fHasLowerLimit(false), fHasUpperLimit(false),
-    fName("")
-   {}
+   ParameterSettings () {}
 
 
   ///constructor for unlimited named Parameter
    ParameterSettings(const std::string & name, double val, double err) :
-    fValue(val), fStepSize(err), fFix(false),
-    fLowerLimit(0.), fUpperLimit(0.), fHasLowerLimit(false), fHasUpperLimit(false),
+    fValue(val), fStepSize(err),
     fName(name)
    {}
 
    ///constructor for double limited Parameter. The given value should be within the given limits [min,max]
    ParameterSettings(const std::string &  name, double val, double err,
                      double min, double max) :
-      fValue(val), fStepSize(err), fFix(false),
-      fLowerLimit(0.), fUpperLimit(0.), fHasLowerLimit(false), fHasUpperLimit(false),
+      fValue(val), fStepSize(err),
       fName(name)
    {
       SetLimits(min,max);
@@ -67,7 +53,6 @@ public:
    ///constructor for fixed Parameter
    ParameterSettings(const std::string &  name, double val) :
     fValue(val), fStepSize(0), fFix(true),
-    fLowerLimit(0.), fUpperLimit(0.), fHasLowerLimit(false), fHasUpperLimit(false),
     fName(name)
    {}
 
@@ -95,16 +80,6 @@ public:
       SetValue(value);
       Fix();
    }
-
-
-   /**
-      Destructor (no operations)
-   */
-   ~ParameterSettings ()  {}
-
-   /// copy constructor and assignment operators (leave them to the compiler)
-
-public:
 
    /// return parameter value
    double Value() const { return fValue; }
@@ -140,29 +115,7 @@ public:
    void SetValue(double val) {fValue = val;}
    /// set the step size
    void SetStepSize(double err) {fStepSize = err;}
-   /// set a double side limit,
-   /// if low == up the parameter is fixed  if low > up the limits are removed
-   /// The current parameter value should be within the given limits [low,up].
-   /// If the value is outside the limits, then a new parameter value is set to = (up+low)/2
-   void SetLimits(double low, double up) {
-
-      if ( low > up ) {
-         RemoveLimits();
-         return;
-      }
-      if (low == up && low == fValue) {
-         Fix();
-         return;
-      }
-      if (low > fValue || up < fValue) {
-         MATH_INFO_MSG("ParameterSettings","lower/upper bounds outside current parameter value. The value will be set to (low+up)/2 ");
-         fValue = 0.5 * (up+low);
-      }
-      fLowerLimit = low;
-      fUpperLimit = up;
-      fHasLowerLimit = true;
-      fHasUpperLimit = true;
-   }
+   void SetLimits(double low, double up);
    /// set a single upper limit
    void SetUpperLimit(double up) {
     fLowerLimit = 0.;
@@ -186,28 +139,19 @@ public:
       fHasUpperLimit = false;
    }
 
-
-
-protected:
-
-
 private:
 
-   double fValue;        // parameter value
-   double fStepSize;     // parameter step size (used by minimizer)
-   bool fFix;            // flag to control if parameter is fixed
-   double fLowerLimit;   // lower parameter limit
-   double fUpperLimit;   // upper parameter limit
-   bool fHasLowerLimit;  // flag to control lower parameter limit
-   bool fHasUpperLimit;  // flag to control upper parameter limit
+   double fValue = 0.0;          ///< parameter value
+   double fStepSize = 0.1;       ///< parameter step size (used by minimizer)
+   bool fFix = false;            ///< flag to control if parameter is fixed
+   double fLowerLimit = 0.0;     ///< lower parameter limit
+   double fUpperLimit = 0.0;     ///< upper parameter limit
+   bool fHasLowerLimit = false;  ///< flag to control lower parameter limit
+   bool fHasUpperLimit = false;  ///< flag to control upper parameter limit
 
-   std::string fName;    // parameter name
-
+   std::string fName;    ///< parameter name
 };
 
-   } // end namespace Fit
-
-} // end namespace ROOT
-
+} // namespace ROOT::Fit
 
 #endif /* ROOT_Fit_ParameterSettings */

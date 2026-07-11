@@ -14,9 +14,9 @@
 #include "Minuit2/MnMatrix.h"
 #include "Minuit2/MinuitParameter.h"
 #include "Minuit2/MnMachinePrecision.h"
-#include "Minuit2/SinParameterTransformation.h"
-#include "Minuit2/SqrtLowParameterTransformation.h"
-#include "Minuit2/SqrtUpParameterTransformation.h"
+#include "Minuit2/MnParameterTransformation.h"
+
+#include <ROOT/RSpan.hxx>
 
 #include <vector>
 #include <string>
@@ -46,9 +46,7 @@ public:
    {
    }
 
-   MnUserTransformation(const std::vector<double> &, const std::vector<double> &);
-
-   ~MnUserTransformation() {}
+   MnUserTransformation(std::span<const double>, std::span<const double>);
 
    MnUserTransformation(const MnUserTransformation &trafo)
       : fPrecision(trafo.fPrecision), fParameters(trafo.fParameters), fExtOfInt(trafo.fExtOfInt),
@@ -85,12 +83,14 @@ public:
    double Int2extError(unsigned int, double, double) const;
 
    MnUserCovariance Int2extCovariance(const MnAlgebraicVector &, const MnAlgebraicSymMatrix &) const;
+   MnUserCovariance Ext2intCovariance(const MnAlgebraicVector &, const MnAlgebraicSymMatrix &) const;
 
    // Index = external Parameter
    double Ext2int(unsigned int, double) const;
 
    // Index = internal Parameter
    double DInt2Ext(unsigned int, double) const;
+   double DExt2Int(unsigned int, double) const;
 
    //   // Index = external Parameter
    //   double dExt2Int(unsigned int, double) const;
@@ -166,7 +166,7 @@ public:
 
    // convert external number into Name of Parameter (will assert if index is out of range)
    const std::string &GetName(unsigned int) const;
-   // mantain interface with const char * for backward compatibility
+   // maintain interface with const char * for backward compatibility
    const char *Name(unsigned int) const;
 
 private:

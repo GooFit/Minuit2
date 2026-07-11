@@ -25,7 +25,7 @@ namespace Minuit2 {
 
 /**
    Build (find) function minimum using the Variable Metric method (MIGRAD)
-   Two possible error updators can be choosen
+   Two possible error updators can be chosen
     - Davidon : this is the standard formula used in Migrad
     - BFGS this is the new formula based on BFGS algorithm
       (see Broyden–Fletcher–Goldfarb–Shanno algorithm
@@ -44,10 +44,8 @@ public:
          fErrorUpdator = std::unique_ptr<MinimumErrorUpdator>(new DavidonErrorUpdator());
    }
 
-   ~VariableMetricBuilder() {}
-
-   virtual FunctionMinimum Minimum(const MnFcn &, const GradientCalculator &, const MinimumSeed &, const MnStrategy &,
-                                   unsigned int, double) const;
+   FunctionMinimum Minimum(const MnFcn &, const GradientCalculator &, const MinimumSeed &, const MnStrategy &,
+                                   unsigned int, double) const override;
 
    FunctionMinimum Minimum(const MnFcn &, const GradientCalculator &, const MinimumSeed &, std::vector<MinimumState> &,
                            unsigned int, double) const;

@@ -20,15 +20,8 @@ namespace Minuit2 {
    Update of the covariance matrix for the Variable Metric minimizer (MIGRAD)
  */
 class DavidonErrorUpdator : public MinimumErrorUpdator {
-
 public:
-   DavidonErrorUpdator() {}
-
-   virtual ~DavidonErrorUpdator() {}
-
-   virtual MinimumError Update(const MinimumState &, const MinimumParameters &, const FunctionGradient &) const;
-
-private:
+   MinimumError Update(const MinimumState &, const MinimumParameters &, const FunctionGradient &) const override;
 };
 
 } // namespace Minuit2

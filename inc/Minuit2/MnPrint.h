@@ -12,11 +12,13 @@
 
 #include "Minuit2/MnConfig.h"
 
-#include <sstream>
-#include <utility>
 #include <cassert>
-#include <string>
 #include <ios>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <utility>
+#include <functional>
 
 namespace ROOT {
 namespace Minuit2 {
@@ -30,12 +32,6 @@ std::ostream &operator<<(std::ostream &, const FunctionMinimum &);
 
 class MinimumState;
 std::ostream &operator<<(std::ostream &, const MinimumState &);
-
-class LAVector;
-std::ostream &operator<<(std::ostream &, const LAVector &);
-
-class LASymMatrix;
-std::ostream &operator<<(std::ostream &, const LASymMatrix &);
 
 class MnUserParameters;
 std::ostream &operator<<(std::ostream &, const MnUserParameters &);
@@ -73,13 +69,14 @@ std::ostream &operator<<(std::ostream &os, const std::pair<double, double> &poin
 class MnPrint {
 public:
    // want this to be an enum class for strong typing...
-   enum class Verbosity { Error = 0, Warn = 1, Info = 2, Debug = 3 };
+   enum class Verbosity { Error = 0, Warn = 1, Info = 2, Debug = 3, Trace = 4 };
 
    // ...but also want the values accessible from MnPrint scope for convenience
    static constexpr auto eError = Verbosity::Error;
    static constexpr auto eWarn = Verbosity::Warn;
    static constexpr auto eInfo = Verbosity::Info;
    static constexpr auto eDebug = Verbosity::Debug;
+   static constexpr auto eTrace = Verbosity::Trace;
 
    // used for one-line printing of fcn minimum state
    class Oneline {
@@ -138,6 +135,12 @@ public:
    void Debug(const Ts &... args)
    {
       Log(eDebug, args...);
+   }
+
+   template <class... Ts>
+   void Trace(const Ts &... args)
+   {
+      Log(eTrace, args...);
    }
 
 private:

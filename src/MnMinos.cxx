@@ -74,7 +74,7 @@ double MnMinos::Upper(unsigned int par, unsigned int maxcalls, double toler) con
 
 MinosError MnMinos::Minos(unsigned int par, unsigned int maxcalls, double toler) const
 {
-   // do full minos error anlysis (lower + upper) for parameter par
+   // do full minos error analysis (lower + upper) for parameter par
 
    MnPrint print("MnMinos");
 
@@ -91,13 +91,14 @@ MinosError MnMinos::Minos(unsigned int par, unsigned int maxcalls, double toler)
    return MinosError(par, fMinimum.UserState().Value(par), lo, up);
 }
 
+/// Get crossing value in the parameter direction
+/// \param direction 1 upper value, -1 lower value
+/// \param par parameter index
+/// \param maxcalls maximum number of function calls, if 0, it will be replaced by 
+/// `2 * (nvar + 1) * (200 + 100 * nvar + 5 * nvar * nvar` where `nvar` is number of variable parameters
+/// \param toler tolerance used for Migrad minimizations
 MnCross MnMinos::FindCrossValue(int direction, unsigned int par, unsigned int maxcalls, double toler) const
 {
-   // get crossing value in the parameter direction :
-   // direction = + 1 upper value
-   // direction = -1 lower value
-   // pass now tolerance used for Migrad minimizations
-
    assert(direction == 1 || direction == -1);
 
    MnPrint print("MnMinos");
@@ -139,7 +140,7 @@ MnCross MnMinos::FindCrossValue(int direction, unsigned int par, unsigned int ma
    // LM:  change to use err**2 (m(i,i) instead of err as in F77 version
    double xunit = std::sqrt(up / m(ind, ind));
    // LM (29/04/08) bug: change should be done in internal variables
-   // set the initial value for the other parmaeters that we are going to fit in MnCross
+   // set the initial value for the other parameters that we are going to fit in MnCross
    for (unsigned int i = 0; i < m.Nrow(); i++) {
       if (i == ind)
          continue;

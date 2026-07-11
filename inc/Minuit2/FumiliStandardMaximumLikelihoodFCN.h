@@ -45,7 +45,7 @@ public:
 
    */
 
-   FumiliStandardMaximumLikelihoodFCN(const ParametricFunction &modelFCN, const std::vector<double> &pos)
+   FumiliStandardMaximumLikelihoodFCN(const ParametricFunction &modelFCN, std::span<const double> pos)
    {
       this->SetModelFunction(modelFCN);
       unsigned int n = pos.size();
@@ -68,13 +68,11 @@ public:
 
    */
 
-   FumiliStandardMaximumLikelihoodFCN(const ParametricFunction &modelFCN, const std::vector<std::vector<double>> &pos)
+   FumiliStandardMaximumLikelihoodFCN(const ParametricFunction &modelFCN, std::span<const std::vector<double>> pos)
    {
       this->SetModelFunction(modelFCN);
-      fPositions = pos;
+      fPositions.assign(pos.begin(), pos.end());
    }
-
-   ~FumiliStandardMaximumLikelihoodFCN() {}
 
    /**
 
@@ -88,7 +86,7 @@ public:
 
    */
 
-   std::vector<double> Elements(const std::vector<double> &par) const;
+   std::vector<double> Elements(std::vector<double> const &par) const override;
 
    /**
 
@@ -100,7 +98,7 @@ public:
 
    */
 
-   virtual const std::vector<double> &GetMeasurement(int Index) const;
+   const std::vector<double> &GetMeasurement(int Index) const override;
 
    /**
 
@@ -111,19 +109,19 @@ public:
 
    */
 
-   virtual int GetNumberOfMeasurements() const;
+   int GetNumberOfMeasurements() const override;
 
    /**
 
    Evaluate function Value, Gradient and Hessian using Fumili approximation, for values of parameters p
-   The resul is cached inside and is return from the FumiliFCNBase::Value ,  FumiliFCNBase::Gradient and
+   The result is cached inside and is return from the FumiliFCNBase::Value ,  FumiliFCNBase::Gradient and
    FumiliFCNBase::Hessian methods
 
    @param par vector of parameters
 
    **/
 
-   virtual void EvaluateAll(const std::vector<double> &par);
+   void EvaluateAll(std::vector<double> const &par) override;
 
 private:
    std::vector<std::vector<double>> fPositions;
