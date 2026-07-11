@@ -34,6 +34,11 @@ jobs:
 
       - name: Test
         run: ctest --test-dir build --output-on-failure
+        env:
+          # The exported targets don't propagate cxx_std_17 yet (fix pending
+          # upstream), so ExampleCMakeBuild's consumer configure needs this on
+          # MSVC, which defaults to C++14.
+          CXXFLAGS: ${{ runner.os == 'Windows' && '/std:c++17' || '' }}
 
       - name: Install
         run: cmake --install build
