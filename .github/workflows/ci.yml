@@ -24,19 +24,19 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
 
       - name: Configure
+        # Debug on Windows: ctest --build-and-test configures the nested
+        # ExampleCMakeBuild project as Debug there, and MSVC can't link
+        # mixed runtimes (/MD vs /MDd), so the library must match.
         run: >-
           cmake -S . -B build -G Ninja
-          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_BUILD_TYPE=${{ runner.os == 'Windows' && 'Debug' || 'Release' }}
           -DCMAKE_INSTALL_PREFIX=install
 
       - name: Build
         run: cmake --build build -j 4
 
       - name: Test
-        # -C Release so ExampleCMakeBuild's nested configure matches the main
-        # build type; ctest --build-and-test defaults to Debug otherwise,
-        # which MSVC refuses to link against a Release Minuit2 (/MD vs /MDd).
-        run: ctest --test-dir build -C Release --output-on-failure
+        run: ctest --test-dir build --output-on-failure
         env:
           # The exported targets don't propagate cxx_std_17 yet (fix pending
           # upstream), so ExampleCMakeBuild's consumer configure needs this on
