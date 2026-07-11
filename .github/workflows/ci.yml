@@ -33,7 +33,10 @@ jobs:
         run: cmake --build build -j 4
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure
+        # -C Release so ExampleCMakeBuild's nested configure matches the main
+        # build type; ctest --build-and-test defaults to Debug otherwise,
+        # which MSVC refuses to link against a Release Minuit2 (/MD vs /MDd).
+        run: ctest --test-dir build -C Release --output-on-failure
         env:
           # The exported targets don't propagate cxx_std_17 yet (fix pending
           # upstream), so ExampleCMakeBuild's consumer configure needs this on
